@@ -1,5 +1,6 @@
 [versions]
 agp = "8.6.1"
+androidGifDrawable = "1.2.29"
 kotlin = "1.9.0"
 coreKtx = "1.1.0"
 junit = "4.13.2"
@@ -12,6 +13,7 @@ activity = "1.9.3"
 constraintlayout = "2.2.0"
 
 [libraries]
+android-gif-drawable = { module = "pl.droidsonroids.gif:android-gif-drawable", version.ref = "androidGifDrawable" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

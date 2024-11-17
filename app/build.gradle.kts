@@ -48,4 +48,5 @@ dependencies {
 
 
     implementation(libs.lottie)
+    implementation(libs.android.gif.drawable)
 }
