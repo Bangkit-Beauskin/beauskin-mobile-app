@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.dicoding.bangkitcapstone.MainActivity
 import com.dicoding.bangkitcapstone.R
+import com.dicoding.bangkitcapstone.MainActivity
 
 class SplashActivity : AppCompatActivity() {
 

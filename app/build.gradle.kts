@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -33,20 +35,42 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
+    // UI dan layout
+    implementation(libs.androidx.core.ktx)              // Kotlin extensions untuk API Android standar
+    implementation(libs.androidx.appcompat)             // Kompatibilitas dengan fitur UI terbaru
+    implementation(libs.material)                       // Material Design components
+    implementation(libs.androidx.activity)              // API terkait Activity
+    implementation(libs.androidx.constraintlayout)     // Layout fleksibel dan responsif
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // LiveData, ViewModel dan Lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)  // ViewModel dengan ekstensi Kotlin
+    implementation(libs.androidx.lifecycle.livedata.ktx)   // LiveData dengan ekstensi Kotlin
+    implementation(libs.androidx.fragment.ktx)             // Fragment dengan ekstensi Kotlin
 
+    implementation(libs.androidx.activity.ktx)
 
-    implementation(libs.lottie)
-    implementation(libs.android.gif.drawable)
+    // Testing
+    testImplementation(libs.junit)                        // Unit testing dengan JUnit
+    androidTestImplementation(libs.androidx.junit)       // UI testing dengan JUnit
+    androidTestImplementation(libs.androidx.espresso.core) // UI testing dengan Espresso
+
+    // Lain-lain
+    implementation(libs.lottie)                          // Animasi berbasis Lottie
+    implementation(libs.android.gif.drawable)            // Menampilkan GIF di UI
+    implementation(libs.hilt.android)                     // Dependency Injection menggunakan Hilt
+    kapt(libs.hilt.android.compiler)                     // Kompilasi Hilt menggunakan KAPT
+
+    implementation(libs.glide)
+}
+
+// Konfigurasi untuk KAPT
+kapt {
+    correctErrorTypes = true  // Memperbaiki jenis kesalahan tipe selama pemrosesan anotasi
 }

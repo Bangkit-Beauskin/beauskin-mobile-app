@@ -1,3 +1,30 @@
 <resources>
-    <string name="app_name">Bangkit[Capstone]</string>
+    <string name="app_name">Bangkit [Capstone]</string>
+
+    <string name="Desc_scan_your_Skin">Scan your skin type and acne problems</string>
+    <string name="capture_screen">Capture Screen</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="capture">Capture</string>
+    <string name="upload_imagestext">Upload Image</string>
+
+    <string name="scan_your_skin_type">Scan your skin type</string>
+    <string name="get_ready">Get Ready</string>
+    <string name="upload_image2">Upload Image</string>
+    <string name="grab_gallery">Grab gallery?</string>
+    <string name="capture_again">Capture Again?</string>
+    <string name="make_sure_to_use_bright_clear_and_crisp_images">Make sure to use bright, clear image</string>
+
+    <string name="no_image_selected">No image selected</string>
+    <string name="failed_to_capture_image">Failed to capture image</string>
+    <string name="failed">Failed</string>
+
+
+
+    <!-- Permission messages -->
+    <string name="permission_rationale">Please grant access to all required permissions for the camera and gallery to ensure the app works properly.</string>
+    <string name="permission_permanently_denied">Permission is required. Please enable it in settings.</string>
+    <string name="permission_granted">Permission Granted</string>
+    <string name="grant">Grant</string>
+    <string name="cancel">Cancel</string>
+
 </resources>
