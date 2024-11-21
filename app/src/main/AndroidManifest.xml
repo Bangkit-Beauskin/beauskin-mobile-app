@@ -28,6 +28,15 @@
         <activity
             android:name=".profile.ProfileActivity"
             android:exported="false"/>
+
+        <activity
+            android:name=".auth.SignInActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="false"/>
+
         <activity
             android:name=".splash.SplashActivity"
             android:exported="true">

@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.dicoding.bangkitcapstone.MainActivity
 import com.dicoding.bangkitcapstone.R
+import com.dicoding.bangkitcapstone.auth.LoginActivity
 
 class SplashActivity : AppCompatActivity() {
 
@@ -19,7 +19,7 @@ class SplashActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
         }, SPLASH_DURATION)
