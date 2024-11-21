@@ -28,6 +28,19 @@
         <activity
             android:name=".profile.ProfileActivity"
             android:exported="false"/>
+
+        <activity
+            android:name=".profile.EditProfileActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".profile.SettingActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".profile.HistoryActivity"
+            android:exported="false"/>
+
         <activity
             android:name=".splash.SplashActivity"
             android:exported="true">
