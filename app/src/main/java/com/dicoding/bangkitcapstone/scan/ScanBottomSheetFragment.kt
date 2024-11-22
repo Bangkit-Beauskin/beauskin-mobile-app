@@ -29,9 +29,13 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
     private val launcherGallery =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             uri?.let {
-                currentImageUri = it
-                scanViewModel.setImageUri(it) // Update ViewModel with selected URI
-                navigateToScanActivity(it) // Navigate to ScanActivity
+                // Generate a cache URI from the picked image
+                val cacheUri = createCacheUri(it)
+                cacheUri?.let { uri ->
+                    currentImageUri = uri
+                    scanViewModel.setImageUri(uri) // Update ViewModel with selected URI
+                    navigateToScanActivity(uri) // Navigate to ScanActivity
+                }
             } ?: Log.d("Photo Picker", "No media selected")
         }
 
@@ -39,11 +43,44 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
     private val pickImageLauncherLegacy =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
-                currentImageUri = it
-                scanViewModel.setImageUri(it) // Update ViewModel with selected URI
-                navigateToScanActivity(it) // Navigate to ScanActivity
+                // Generate a cache URI from the picked image
+                val cacheUri = createCacheUri(it)
+                cacheUri?.let { uri ->
+                    currentImageUri = uri
+                    scanViewModel.setImageUri(uri) // Update ViewModel with selected URI
+                    navigateToScanActivity(uri) // Navigate to ScanActivity
+                }
             }
         }
+
+    private fun createCacheUri(originalUri: Uri? = null): Uri? {
+        return try {
+            val cacheDir = requireContext().cacheDir
+            val file = File(cacheDir, "image_cache_${System.currentTimeMillis()}.jpg")
+
+            // Jika originalUri tidak null, salin konten dari URI ke cache
+            originalUri?.let {
+                val inputStream = requireContext().contentResolver.openInputStream(it)
+                val outputStream = file.outputStream()
+                inputStream?.copyTo(outputStream)
+                outputStream.close()
+                inputStream?.close()
+                Log.d("CreateCacheUri", "File copied from originalUri to cache: ${file.absolutePath}")
+            }
+
+            // Buat URI untuk file di cache
+            val cacheUri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                file
+            )
+            Log.d("CreateCacheUri", "Cache file created successfully: ${file.absolutePath}, URI: $cacheUri")
+            cacheUri
+        } catch (e: Exception) {
+            Log.e("CreateCacheUri", "Failed to create cache file or URI: ${e.localizedMessage}")
+            null
+        }
+    }
 
     // Launcher for taking a picture from the camera
     private val launcherCamera =
@@ -61,36 +98,10 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
 
     // Function to initiate camera capture and generate a URI for storing the image
     private fun startCamera() {
-        cameraImageUri = createImageUri() // Generate URI to store image
+        cameraImageUri = createCacheUri() // Generate URI to store image
         cameraImageUri?.let { uri ->
             launcherCamera.launch(uri) // Launch the camera with the generated URI
         } ?: Log.e("Camera", "Failed to create URI for camera image")
-    }
-
-    // Creates a URI to store the image in the app's private storage
-//    private fun createImageUri(): Uri? {
-//        val file = File(requireContext().filesDir, "camera_image_${System.currentTimeMillis()}.jpg")
-//        return FileProvider.getUriForFile(
-//            requireContext(),
-//            "${requireContext().packageName}.fileprovider", // Define the file provider in your manifest
-//            file
-//        )
-//    }
-
-    private fun createImageUri(): Uri? {
-        return try {
-            val file = File(requireContext().cacheDir, "camera_image_${System.currentTimeMillis()}.jpg")
-            val uri = FileProvider.getUriForFile(
-                requireContext(),
-                "${requireContext().packageName}.fileprovider",
-                file
-            )
-            Log.d("CreateImageUri_ScanBottomSheetFragment", "File created successfully: ${file.absolutePath}, URI: $uri")
-            uri
-        } catch (e: Exception) {
-            Log.e("CreateImageUri_ScanBottomSheetFragment", "Failed to create file or URI: ${e.localizedMessage}")
-            null
-        }
     }
 
     override fun onCreateView(
@@ -106,11 +117,11 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.imageButtonCapture.setOnClickListener {
-            startCamera() // Start the camera when the capture button is clicked
+            startCamera()
         }
 
         binding.imageButtonUpload.setOnClickListener {
-            startGallery() // Start the gallery when the upload button is clicked
+            startGallery()
         }
     }
 

@@ -19,6 +19,7 @@ import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.databinding.ActivityScanBinding
 import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment.Companion.EXTRA_IMAGE_URI
 import java.io.File
+import java.io.FileOutputStream
 
 class ScanActivity : AppCompatActivity() {
 
@@ -47,82 +48,23 @@ class ScanActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 currentImageUri?.let { uri ->
-                    viewModel.imageUri.value?.let { oldUri -> deleteImageFile(oldUri) }
+
+                    viewModel.imageUri.value?.let { oldUri -> deleteCacheFile(oldUri) }
                     viewModel.setImageUri(uri)
                     displayImage(uri)
                 }
             } else {
-                currentImageUri?.let { deleteImageFile(it) }
+                currentImageUri?.let { deleteCacheFile(it) }
                 currentImageUri = null
+
                 showToast(getString(R.string.cancel))
             }
         }
-
-    // function to upload the image to the cloud
-    private fun uploadToCloud(uri: Uri) {
-        // Implement your cloud upload logic here
-        Log.d("Upload", "Uploading image to cloud: $uri")
-
-        // After uploading, save the image to the gallery if it came from the camera
-        if (uri.toString().contains("cache")) {  // Check if the image is taken from camera
-            saveToGallery(uri)
-        }
-
-        // After successful upload, delete the image from cache
-        deleteImageFile(uri)
-    }
-
-    // Function to save the image to the gallery if it's not already there
-    private fun saveToGallery(uri: Uri) {
-        try {
-            val resolver = contentResolver
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, "image_${System.currentTimeMillis()}.jpg")
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Beauskin")
-            }
-
-            // Check if image already exists in the gallery
-            val existingImageUri = resolver.query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Images.Media._ID),
-                "${MediaStore.Images.Media.DATA} = ?",
-                arrayOf(uri.path),
-                null
-            )?.use {
-                if (it.moveToFirst()) {
-                    it.getLong(it.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
-                } else {
-                    null
-                }
-            }
-
-            if (existingImageUri == null) {
-                // Image not found in gallery, proceed with saving
-                val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                imageUri?.let { destinationUri ->
-                    resolver.openOutputStream(destinationUri)?.use { outputStream ->
-                        resolver.openInputStream(uri)?.use { inputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-                    Log.d("Gallery", "Image saved to gallery: $imageUri")
-                }
-            } else {
-                Log.d("Gallery", "Image already exists in gallery: $existingImageUri")
-            }
-
-        } catch (e: Exception) {
-            Log.e("Gallery", "Error saving image to gallery: ${e.localizedMessage}")
-        }
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityScanBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
         // Handle passed image URI if any
         intent.getStringExtra(EXTRA_IMAGE_URI)?.let { uriString ->
@@ -161,12 +103,12 @@ class ScanActivity : AppCompatActivity() {
     // Set up UI listeners for back, capture again, and gallery pick actions
     private fun setupUiListeners() {
         binding.btnBack.setOnClickListener {
-            viewModel.imageUri.value?.let { uri -> deleteImageFile(uri) }
-            finish() // Close the activity on back button press
+            viewModel.imageUri.value?.let { uri -> deleteCacheFile(uri) }
+            finish()
         }
 
         binding.btnCaptureAgain.setOnClickListener {
-            startCamera() // Capture a new image on button press
+            startCamera()
         }
 
         binding.btnGrabGallery.setOnClickListener {
@@ -179,36 +121,40 @@ class ScanActivity : AppCompatActivity() {
         }
 
         binding.btnUploadImageToApi.setOnClickListener {
-            currentImageUri?.let { uri ->
-                uploadToCloud(uri)
-            } ?: showToast("No image selected")
+            val imageUri = viewModel.imageUri.value
+            if (imageUri != null) {
+                uploadToCloud(imageUri)
+            } else {
+                showToast("No image available for upload")
+            }
         }
+
     }
 
     // Start the camera to take a new picture
     private fun startCamera() {
-        currentImageUri = createImageUri() // Create a new URI for the image
+        currentImageUri = createCacheUri() // Create a new URI for the image
         currentImageUri?.let { launcherCamera.launch(it) } // Launch the camera with the URI
     }
 
-    // Create a URI for storing the taken image
-//    private fun createImageUri(): Uri? {
-//        val file = File(filesDir, "camera_image_${System.currentTimeMillis()}.jpg")
-//        return FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-//    }
-
-    private fun createImageUri(): Uri? {
+    // Create a cache URI
+    private fun createCacheUri(originalUri: Uri? = null): Uri? {
         return try {
+            val cacheDir = cacheDir
+            val file = File(cacheDir, "image_cache_${System.currentTimeMillis()}.jpg")
 
-            val file = File(cacheDir, "camera_image_${System.currentTimeMillis()}.jpg")
+            // Copy originalUri contents to cache
+            originalUri?.let {
+                contentResolver.openInputStream(it)?.use { inputStream ->
+                    FileOutputStream(file).use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+            }
 
-            val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-
-            Log.d("CreateImageUri", "File created successfully: ${file.absolutePath}, URI: $uri")
-            uri
+            FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
         } catch (e: Exception) {
-
-            Log.e("CreateImageUri", "Failed to create file or URI: ${e.localizedMessage}")
+            Log.e("Cache", "Error creating cache URI: ${e.localizedMessage}")
             null
         }
     }
@@ -220,34 +166,109 @@ class ScanActivity : AppCompatActivity() {
         Glide.with(this)
             .load(uri)
             .placeholder(R.drawable.ic_place_holder)
-            .diskCacheStrategy(DiskCacheStrategy.NONE) // Disable disk cache
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
             .into(binding.previewImageView)
     }
 
     private fun handleImageSelection(uri: Uri?) {
         if (uri != null) {
-            // Hapus gambar lama sebelum mengganti dengan yang baru
-            viewModel.imageUri.value?.let { oldUri ->
-                deleteImageFile(oldUri)
+            try {
+                viewModel.imageUri.value?.let { oldUri ->
+                    deleteCacheFile(oldUri)
+                    Log.d(tag, "Old image file deleted: $oldUri")
+                }
+                val cacheUri =
+                    createCacheUri(uri) ?: uri
+                viewModel.setImageUri(cacheUri)
+                displayImage(cacheUri)
+                Log.d(tag, "Image selected and cached: $cacheUri")
+            } catch (e: Exception) {
+                Log.e(tag, "Failed to handle selected image: ${e.localizedMessage}")
+                showToast("Failed to process selected image")
             }
-            // Perbarui URI di ViewModel
-            viewModel.setImageUri(uri)
         } else {
             showToast(getString(R.string.no_image_selected))
+            Log.w(tag, "No image selected")
         }
     }
 
-    // Delete the image file
-    private fun deleteImageFile(uri: Uri) {
+
+    // function to upload the image to the cloud
+    private fun uploadToCloud(uri: Uri) {
+        // example
+        Log.d("Upload", "Uploading image to cloud: $uri")
+
+        saveToGallery(uri)
+
+        // After saving to gallery, delete the cached file
+        deleteCacheFile(uri)
+        Log.i("Cache", "Deleted cache file: $uri")
+    }
+
+    // Function to save the image to the gallery with the 'Beauskin' folder
+    private fun saveToGallery(uri: Uri) {
         try {
-            val file = File(cacheDir, uri.lastPathSegment ?: return)
-            if (file.exists() && file.delete()) {
-                Log.i(tag, "Deleted image file: ${file.absolutePath}")
+            val resolver = contentResolver
+            val cachedUri = createCacheUri(uri) ?: uri
+
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, "image_${System.currentTimeMillis()}.jpg")
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_PICTURES}/Beauskin"
+                )
+            }
+
+            val newImageUri =
+                resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            if (newImageUri != null) {
+                resolver.openInputStream(cachedUri)?.use { inputStream ->
+                    resolver.openOutputStream(newImageUri)?.use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                        Log.d("Gallery", "Image successfully saved to gallery: $newImageUri")
+                    }
+                }
+
+                // After saving to gallery, delete the cached file
+                deleteCacheFile(cachedUri)
+                Log.i("Cache", "Deleted cached file after saving to gallery: $cachedUri")
+
             } else {
-                Log.w(tag, "File not found or failed to delete: ${file.absolutePath}")
+                Log.e("Gallery", "Failed to create new image entry in MediaStore")
             }
         } catch (e: Exception) {
-            Log.e(tag, "Error deleting image file: ${e.localizedMessage}")
+            Log.e("Gallery", "Error saving image to gallery: ${e.localizedMessage}")
+        }
+    }
+
+    private fun deleteCacheFile(uri: Uri? = null) {
+        try {
+            val cacheDir = cacheDir
+            if (uri != null) {
+                // Delete a specific file
+                val file = File(cacheDir, uri.lastPathSegment ?: return)
+                if (file.exists() && file.delete()) {
+                    Log.i("Cache", "Deleted image file: ${file.absolutePath}")
+                } else {
+                    Log.w("Cache", "File not found or failed to delete: ${file.absolutePath}")
+                }
+            } else {
+                // Delete all image cache files
+                cacheDir.listFiles()?.forEach { file ->
+                    if (file.name.startsWith("image_cache_") && file.name.endsWith(".jpg")) {
+                        if (file.delete()) {
+                            Log.i("Cache", "Deleted cache file: ${file.absolutePath}")
+                        } else {
+                            Log.w("Cache", "Failed to delete cache file: ${file.absolutePath}")
+                        }
+                    } else {
+                        Log.i("Cache", "Skipped non-image cache file: ${file.absolutePath}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Cache", "Error deleting cache file: ${e.localizedMessage}")
         }
     }
 
@@ -258,7 +279,6 @@ class ScanActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.imageUri.value?.let { deleteImageFile(it) }
+        viewModel.imageUri.value?.let { deleteCacheFile(it) }
     }
-
 }
