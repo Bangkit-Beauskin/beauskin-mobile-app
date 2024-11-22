@@ -19,7 +19,7 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
 
     private var _binding: FragmentScanBottomSheetBinding? = null
     private val binding get() = _binding!!
-    private val scanViewModel: ScanViewModel by activityViewModels() // Shared ViewModel for communication
+    private val scanViewModel: ScanViewModel by activityViewModels()
 
     private var currentImageUri: Uri? = null
     private var cameraImageUri: Uri? = null
@@ -68,16 +68,31 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     // Creates a URI to store the image in the app's private storage
+//    private fun createImageUri(): Uri? {
+//        val file = File(requireContext().filesDir, "camera_image_${System.currentTimeMillis()}.jpg")
+//        return FileProvider.getUriForFile(
+//            requireContext(),
+//            "${requireContext().packageName}.fileprovider", // Define the file provider in your manifest
+//            file
+//        )
+//    }
+
     private fun createImageUri(): Uri? {
-        val file = File(requireContext().filesDir, "camera_image_${System.currentTimeMillis()}.jpg")
-        return FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider", // Define the file provider in your manifest
-            file
-        )
+        return try {
+            val file = File(requireContext().cacheDir, "camera_image_${System.currentTimeMillis()}.jpg")
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                file
+            )
+            Log.d("CreateImageUri_ScanBottomSheetFragment", "File created successfully: ${file.absolutePath}, URI: $uri")
+            uri
+        } catch (e: Exception) {
+            Log.e("CreateImageUri_ScanBottomSheetFragment", "Failed to create file or URI: ${e.localizedMessage}")
+            null
+        }
     }
 
-    // Inflate the fragment's view and bind the layout
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
