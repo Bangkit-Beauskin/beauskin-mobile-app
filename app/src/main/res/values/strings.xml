@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Bangkit[Capstone]</string>
+    <string name="otp_verification_instruction">We have sent the verification code to your email</string>
 </resources>

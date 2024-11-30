@@ -49,4 +49,8 @@ dependencies {
 
     implementation(libs.lottie)
     implementation(libs.android.gif.drawable)
+
+    implementation ("com.beust:klaxon:5.5")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
 }

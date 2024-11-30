@@ -23,10 +23,11 @@
         <EditText
             android:id="@+id/edtEmail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:hint="Email"
+            android:inputType="textEmailAddress"
             android:background="@android:color/transparent"
-            android:padding="8dp"/>
+            android:paddingHorizontal="8dp"/>
 
         <View
             android:layout_width="match_parent"
@@ -40,13 +41,30 @@
         android:orientation="vertical"
         android:layout_marginTop="16dp">
 
-        <EditText
-            android:id="@+id/edtPassword"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Password"
-            android:background="@android:color/transparent"
-            android:padding="8dp"/>
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/edtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:background="@android:color/transparent"
+                android:paddingHorizontal="8dp"
+                android:paddingEnd="40dp"/>
+
+            <ImageButton
+                android:id="@+id/btnTogglePassword"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_visibility_off_24"
+                android:layout_gravity="end|center_vertical"
+                android:padding="12dp"/>
+
+        </FrameLayout>
 
         <View
             android:layout_width="match_parent"
@@ -62,24 +80,35 @@
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             android:text="Already have an account? "
             android:textSize="12sp"/>
 
         <TextView
             android:id="@+id/btnLogin"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             android:text="Login"
             android:textColor="@color/navy_blue"
             android:textStyle="bold"
-            android:textSize="12sp"/>
+            android:textSize="12sp"
+            android:padding="8dp"/>
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSignIn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:text="Sign In"
         android:textAllCaps="false"
         android:layout_marginTop="32dp"
