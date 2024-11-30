@@ -2,159 +2,126 @@ package com.dicoding.bangkitcapstone.auth
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
-import android.util.Log
-import android.view.View
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.text.method.PasswordTransformationMethod
+import android.util.Patterns
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.dicoding.bangkitcapstone.MainActivity
+import androidx.core.view.isVisible
 import com.dicoding.bangkitcapstone.R
-import com.dicoding.bangkitcapstone.api.ApiService
-import com.google.android.material.button.MaterialButton
+import com.dicoding.bangkitcapstone.databinding.ActivityLoginBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
-    private val apiService = ApiService()
-    private lateinit var progressBar: ProgressBar
-    private lateinit var edtEmail: EditText
-    private lateinit var edtPassword: EditText
-    private lateinit var btnTogglePassword: ImageButton
-    private var isPasswordVisible = false
+    private lateinit var binding: ActivityLoginBinding
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        initializeViews()
-        setClickListeners()
-        checkExistingSession()
+        setupViews()
+        observeViewModel()
     }
 
-    private fun initializeViews() {
-        edtEmail = findViewById(R.id.edtEmail)
-        edtPassword = findViewById(R.id.edtPassword)
-        btnTogglePassword = findViewById(R.id.btnTogglePassword)
-        progressBar = findViewById(R.id.progressBar)
+    private fun setupViews() {
+        binding.btnLogin.setOnClickListener {
+            val email = binding.edtEmail.text.toString()
+            val password = binding.edtPassword.text.toString()
 
-        setupPasswordToggle()
-
-        // Pre-fill email if coming back from registration
-        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
-        edtEmail.setText(prefs.getString("last_email", ""))
-    }
-
-    private fun setupPasswordToggle() {
-        btnTogglePassword.setOnClickListener {
-            isPasswordVisible = !isPasswordVisible
-
-            if (isPasswordVisible) {
-                edtPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                btnTogglePassword.setImageResource(R.drawable.baseline_visibility_24)
-            } else {
-                edtPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                btnTogglePassword.setImageResource(R.drawable.baseline_visibility_off_24)
-            }
-
-            edtPassword.setSelection(edtPassword.text.length)
-        }
-    }
-
-    private fun setClickListeners() {
-        findViewById<MaterialButton>(R.id.btnLogin).setOnClickListener {
-            val email = edtEmail.text.toString()
-            val password = edtPassword.text.toString()
-
-            if (validateInput(email, password)) {
-                performLogin(email, password)
+            if (validateInputs(email, password)) {
+                viewModel.login(email, password)
             }
         }
 
-        findViewById<TextView>(R.id.btnSignIn).setOnClickListener {
+        binding.btnSignIn.setOnClickListener {
             startActivity(Intent(this, SignInActivity::class.java))
         }
-    }
 
-    private fun checkExistingSession() {
-        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
-        val token = prefs.getString("token", null)
-        val isVerified = prefs.getBoolean("is_verified", false)
-
-        if (token != null && isVerified) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+        binding.btnTogglePassword.setOnClickListener {
+            togglePasswordVisibility()
         }
     }
 
-    private fun validateInput(email: String, password: String): Boolean {
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
-            return false
-        }
+    private fun togglePasswordVisibility() {
+        val editText = binding.edtPassword
+        val isPasswordVisible = editText.transformationMethod == null
 
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show()
-            return false
+        if (isPasswordVisible) {
+            editText.transformationMethod = PasswordTransformationMethod.getInstance()
+            binding.btnTogglePassword.setImageResource(R.drawable.baseline_visibility_off_24)
+        } else {
+            editText.transformationMethod = null
+            binding.btnTogglePassword.setImageResource(R.drawable.baseline_visibility_24)
         }
-
-        if (password.length < 6) {
-            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
-            return false
-        }
-
-        return true
+        editText.setSelection(editText.text.length)
     }
 
-    private fun performLogin(email: String, password: String) {
-        showLoading(true)
+    private fun observeViewModel() {
+        viewModel.authState.observe(this) { state ->
+            when (state) {
+                is AuthState.Loading -> showLoading(true)
+                is AuthState.Success -> {
+                    showLoading(false)
+                    val response = state.response
+                    if (response.code == 200) {
+                        val accessToken = response.data?.tokenInfo?.access
+                        if (accessToken != null) {
+                            getSharedPreferences("auth", MODE_PRIVATE)
+                                .edit()
+                                .putString("token", accessToken)
+                                .putString("email", binding.edtEmail.text.toString())
+                                .putBoolean("is_verified", response.isVerified)
+                                .apply()
 
-        apiService.login(email, password) { result ->
-            runOnUiThread {
-                showLoading(false)
-                result.fold(
-                    onSuccess = { response ->
-                        Log.d("LoginActivity", "Login success: $response")
-                        handleLoginSuccess(response.token, email, password)
-                    },
-                    onFailure = { exception ->
-                        Log.e("LoginActivity", "Login failed", exception)
-                        Toast.makeText(
-                            this,
-                            exception.message ?: "Login failed",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            navigateToOtpVerification()
+                        } else {
+                            showError("Authentication failed: No token received")
+                        }
+                    } else {
+                        showError(response.message ?: "Login failed")
                     }
-                )
+                }
+                is AuthState.Error -> {
+                    showLoading(false)
+                    showError(state.message)
+                    getSharedPreferences("auth", MODE_PRIVATE)
+                        .edit()
+                        .clear()
+                        .apply()
+                }
             }
         }
-    }
-
-    private fun handleLoginSuccess(token: String?, email: String, password: String) {
-        if (token == null) {
-            Toast.makeText(this, "Invalid response from server", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        getSharedPreferences("auth", MODE_PRIVATE)
-            .edit()
-            .putString("temp_token", token)
-            .putString("temp_email", email)
-            .putString("temp_password", password)
-            .putString("last_email", email)
-            .apply()
-
-        val intent = Intent(this, OtpVerificationActivity::class.java)
-        intent.putExtra("FROM_REGISTER", false)
-        startActivity(intent)
     }
 
     private fun showLoading(isLoading: Boolean) {
-        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        edtEmail.isEnabled = !isLoading
-        edtPassword.isEnabled = !isLoading
-        findViewById<MaterialButton>(R.id.btnLogin).isEnabled = !isLoading
-        btnTogglePassword.isEnabled = !isLoading
+        binding.progressBar.isVisible = isLoading
+        binding.btnLogin.isEnabled = !isLoading
+    }
+
+    private fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun validateInputs(email: String, password: String): Boolean {
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.edtEmail.error = "Please enter a valid email"
+            return false
+        }
+        if (password.isEmpty() || password.length < 6) {
+            binding.edtPassword.error = "Password must be at least 6 characters"
+            return false
+        }
+        return true
+    }
+
+    private fun navigateToOtpVerification() {
+        val intent = Intent(this, OtpVerificationActivity::class.java).apply {
+            putExtra("email", binding.edtEmail.text.toString())
+        }
+        startActivity(intent)
+        finish()
     }
 }
