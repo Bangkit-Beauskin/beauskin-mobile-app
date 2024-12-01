@@ -29,7 +29,15 @@ class AuthViewModel @Inject constructor(
             _authState.value = AuthState.Loading
             repository.login(email, password).fold(
                 onSuccess = { response ->
-                    _authState.value = AuthState.Success(response)
+                    if (response.isSuccessful) {
+                        response.body()?.let { authResponse ->
+                            _authState.value = AuthState.Success(authResponse)
+                        } ?: run {
+                            _authState.value = AuthState.Error("Empty response body")
+                        }
+                    } else {
+                        _authState.value = AuthState.Error("Login failed: ${response.code()}")
+                    }
                 },
                 onFailure = { error ->
                     _authState.value = AuthState.Error(error.message ?: "Unknown error occurred")
@@ -43,7 +51,15 @@ class AuthViewModel @Inject constructor(
             _authState.value = AuthState.Loading
             repository.register(email, password).fold(
                 onSuccess = { response ->
-                    _authState.value = AuthState.Success(response)
+                    if (response.isSuccessful) {
+                        response.body()?.let { authResponse ->
+                            _authState.value = AuthState.Success(authResponse)
+                        } ?: run {
+                            _authState.value = AuthState.Error("Empty response body")
+                        }
+                    } else {
+                        _authState.value = AuthState.Error("Registration failed: ${response.code()}")
+                    }
                 },
                 onFailure = { error ->
                     _authState.value = AuthState.Error(error.message ?: "Unknown error occurred")
@@ -57,7 +73,15 @@ class AuthViewModel @Inject constructor(
             _otpState.value = OtpState.Loading
             repository.verifyOtp(otp).fold(
                 onSuccess = { response ->
-                    _otpState.value = OtpState.Success(response)
+                    if (response.isSuccessful) {
+                        response.body()?.let { otpResponse ->
+                            _otpState.value = OtpState.Success(otpResponse)
+                        } ?: run {
+                            _otpState.value = OtpState.Error("Empty response body")
+                        }
+                    } else {
+                        _otpState.value = OtpState.Error("OTP verification failed: ${response.code()}")
+                    }
                 },
                 onFailure = { error ->
                     _otpState.value = OtpState.Error(error.message ?: "Unknown error occurred")
@@ -71,7 +95,15 @@ class AuthViewModel @Inject constructor(
             _resendState.value = AuthState.Loading
             repository.resendOtp().fold(
                 onSuccess = { response ->
-                    _resendState.value = AuthState.Success(response)
+                    if (response.isSuccessful) {
+                        response.body()?.let { authResponse ->
+                            _resendState.value = AuthState.Success(authResponse)
+                        } ?: run {
+                            _resendState.value = AuthState.Error("Empty response body")
+                        }
+                    } else {
+                        _resendState.value = AuthState.Error("Failed to resend OTP: ${response.code()}")
+                    }
                 },
                 onFailure = { error ->
                     _resendState.value = AuthState.Error(error.message ?: "Failed to resend OTP")

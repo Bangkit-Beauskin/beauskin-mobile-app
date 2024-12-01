@@ -3,44 +3,46 @@ package com.dicoding.bangkitcapstone.data.repository
 import android.content.Context
 import android.util.Log
 import com.dicoding.bangkitcapstone.data.api.ApiService
-import com.dicoding.bangkitcapstone.data.model.AuthResponse
-import com.dicoding.bangkitcapstone.data.model.LoginRequest
-import com.dicoding.bangkitcapstone.data.model.OtpRequest
-import com.dicoding.bangkitcapstone.data.model.OtpResponse
-import com.dicoding.bangkitcapstone.data.model.RegisterRequest
+import com.dicoding.bangkitcapstone.data.local.TokenManager
+import com.dicoding.bangkitcapstone.data.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
+import retrofit2.Response
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AuthRepository @Inject constructor(
     private val apiService: ApiService,
+    private val tokenManager: TokenManager,
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private const val PREFS_NAME = "auth"
-        private const val KEY_TOKEN = "token"
-        private const val KEY_VERIFIED = "is_verified"
         private const val KEY_EMAIL = "email"
         private const val KEY_PASSWORD = "password"
     }
 
-    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
 
-    suspend fun login(email: String, password: String): Result<AuthResponse> {
+    suspend fun login(email: String, password: String): Result<Response<AuthResponse>> {
         return try {
-            val response = apiService.login(LoginRequest(email, password))
-            Log.d("AuthRepository", "Login response: $response")
-
-            if (response.code == 200) {
-                if (response.message == "User fetched") {
-                    prefs.edit()
-                        .putString(KEY_EMAIL, email)
-                        .putString(KEY_PASSWORD, password)
-                        .apply()
+            val response: Response<AuthResponse> = apiService.login(LoginRequest(email, password))
+            when {
+                response.isSuccessful -> {
+                    val body = response.body()
+                    if (body != null) {
+                        body.data?.tokenInfo?.access?.let { token ->
+                            tokenManager.saveAccessToken(token)
+                            prefs.edit()
+                                .putString(KEY_EMAIL, email)
+                                .putString(KEY_PASSWORD, password)
+                                .apply()
+                        }
+                        Result.success(response)
+                    } else {
+                        Result.failure(Exception("Empty response body"))
+                    }
                 }
-                Result.success(response)
-            } else {
-                Log.e("AuthRepository", "Invalid response: ${response.message}")
-                Result.failure(Exception(response.message ?: "Login failed"))
+                else -> Result.failure(Exception("Login failed: ${response.code()}"))
             }
         } catch (e: Exception) {
             Log.e("AuthRepository", "Login error", e)
@@ -48,51 +50,91 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun register(email: String, password: String): Result<AuthResponse> {
+    suspend fun register(email: String, password: String): Result<Response<AuthResponse>> {
         return try {
-            val response = apiService.register(RegisterRequest(email, password))
-            Log.d("AuthRepository", "Register response: $response")
-
-            response.data?.tokenInfo?.access?.let { token: String ->
-                prefs.edit()
-                    .putString(KEY_TOKEN, token)
-                    .putString(KEY_EMAIL, email)
-                    .putString(KEY_PASSWORD, password)
-                    .putBoolean(KEY_VERIFIED, response.isVerified)
-                    .apply()
+            val response: Response<AuthResponse> = apiService.register(RegisterRequest(email, password))
+            when {
+                response.isSuccessful -> {
+                    val body = response.body()
+                    if (body != null) {
+                        body.data?.tokenInfo?.access?.let { token ->
+                            tokenManager.saveAccessToken(token)
+                            prefs.edit()
+                                .putString(KEY_EMAIL, email)
+                                .putString(KEY_PASSWORD, password)
+                                .apply()
+                        }
+                        Result.success(response)
+                    } else {
+                        Result.failure(Exception("Empty response body"))
+                    }
+                }
+                else -> Result.failure(Exception("Registration failed: ${response.code()}"))
             }
-            Result.success(response)
         } catch (e: Exception) {
             Log.e("AuthRepository", "Register error", e)
             Result.failure(e)
         }
     }
 
-    suspend fun verifyOtp(otp: String): Result<OtpResponse> {
+    suspend fun verifyOtp(otp: String): Result<Response<OtpResponse>> {
         return try {
-            val token = prefs.getString(KEY_TOKEN, null)
-            if (token == null) {
-                return Result.failure(Exception("No auth token found"))
-            }
+            val accessToken = tokenManager.getAccessToken()
+                ?: return Result.failure(Exception("No access token found"))
 
-            val response = apiService.verifyOtp(
-                token = "Bearer $token",
-                request = OtpRequest(otp = otp)
+            val response: Response<OtpResponse> = apiService.verifyOtp(
+                token = "Bearer $accessToken",
+                request = OtpRequest(otp)
             )
 
-            if (response.success) {
-                prefs.edit()
-                    .putBoolean(KEY_VERIFIED, true)
-                    .apply()
+            when {
+                response.isSuccessful -> {
+                    val body = response.body()
+                    if (body != null) {
+                        if (body.success) {
+                            tokenManager.saveSessionToken(accessToken)
+                        }
+                        Result.success(response)
+                    } else {
+                        Result.failure(Exception("Empty response body"))
+                    }
+                }
+                else -> Result.failure(Exception("OTP verification failed: ${response.code()}"))
             }
-
-            Result.success(response)
         } catch (e: Exception) {
+            Log.e("AuthRepository", "OTP verification error", e)
             Result.failure(e)
         }
     }
 
-    suspend fun resendOtp(): Result<AuthResponse> {
+    suspend fun refreshToken(): Result<Response<TokenResponse>> {
+        return try {
+            val sessionToken = tokenManager.getSessionToken()
+                ?: return Result.failure(Exception("No session token found"))
+
+            val response: Response<TokenResponse> = apiService.refreshToken("Bearer $sessionToken")
+
+            when {
+                response.isSuccessful -> {
+                    val body = response.body()
+                    if (body != null) {
+                        body.data?.tokenInfo?.access?.let { newToken ->
+                            tokenManager.saveSessionToken(newToken)
+                        }
+                        Result.success(response)
+                    } else {
+                        Result.failure(Exception("Empty response body"))
+                    }
+                }
+                else -> Result.failure(Exception("Token refresh failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Token refresh error", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun resendOtp(): Result<Response<AuthResponse>> {
         return try {
             val email = prefs.getString(KEY_EMAIL, null)
             val password = prefs.getString(KEY_PASSWORD, null)
@@ -103,7 +145,13 @@ class AuthRepository @Inject constructor(
 
             login(email, password)
         } catch (e: Exception) {
+            Log.e("AuthRepository", "Resend OTP error", e)
             Result.failure(e)
         }
+    }
+
+    fun clearAuth() {
+        tokenManager.clearTokens()
+        prefs.edit().clear().apply()
     }
 }

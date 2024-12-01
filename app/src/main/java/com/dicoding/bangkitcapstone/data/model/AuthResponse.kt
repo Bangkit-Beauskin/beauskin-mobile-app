@@ -18,6 +18,13 @@ data class TokenInfo(
     @SerializedName("access") val access: String?
 )
 
+data class TokenResponse(
+    @SerializedName("code") val code: Int,
+    @SerializedName("message") val message: String?,
+    @SerializedName("data") val data: TokenData?,
+    @SerializedName("status") val status: String?
+)
+
 data class LoginRequest(
     @SerializedName("email") val email: String,
     @SerializedName("password") val password: String
