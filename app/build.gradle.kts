@@ -78,5 +78,9 @@ dependencies {
     // WorkManager
     implementation ("androidx.work:work-runtime-ktx:2.8.1")
 
+    // Glide
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
 }
 

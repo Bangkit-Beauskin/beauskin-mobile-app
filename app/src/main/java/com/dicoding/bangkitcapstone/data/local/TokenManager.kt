@@ -1,64 +1,64 @@
 package com.dicoding.bangkitcapstone.data.local
 
 import android.content.Context
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TokenManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext context: Context
 ) {
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+
     companion object {
-        private const val PREF_NAME = "secure_auth"
-        private const val ACCESS_TOKEN = "access_token"
-        private const val ACCESS_TOKEN_EXPIRY = "access_token_expiry"
-        private const val SESSION_TOKEN = "session_token"
-        private const val SESSION_TOKEN_EXPIRY = "session_token_expiry"
-    }
-
-    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-
-    private val encryptedPrefs = EncryptedSharedPreferences.create(
-        PREF_NAME,
-        masterKeyAlias,
-        context,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    fun saveAccessToken(token: String) {
-        encryptedPrefs.edit()
-            .putString(ACCESS_TOKEN, token)
-            .putLong(ACCESS_TOKEN_EXPIRY, System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5))
-            .apply()
+        private const val KEY_SESSION_TOKEN = "session_token"
+        private const val KEY_ACCESS_TOKEN = "access_token"
+        private const val KEY_TOKEN_TIMESTAMP = "token_timestamp"
+        private const val TOKEN_VALIDITY_DURATION = 45 * 60 * 1000 // 45 minutes in milliseconds
     }
 
     fun saveSessionToken(token: String) {
-        encryptedPrefs.edit()
-            .putString(SESSION_TOKEN, token)
-            .putLong(SESSION_TOKEN_EXPIRY, System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1))
+        prefs.edit()
+            .putString(KEY_SESSION_TOKEN, token)
+            .putLong(KEY_TOKEN_TIMESTAMP, System.currentTimeMillis())
             .apply()
     }
 
-    fun getAccessToken(): String? = encryptedPrefs.getString(ACCESS_TOKEN, null)
+    fun getSessionToken(): String? {
+        return prefs.getString(KEY_SESSION_TOKEN, null)
+    }
 
-    fun getSessionToken(): String? = encryptedPrefs.getString(SESSION_TOKEN, null)
+    fun saveAccessToken(token: String) {
+        prefs.edit()
+            .putString(KEY_ACCESS_TOKEN, token)
+            .putLong(KEY_TOKEN_TIMESTAMP, System.currentTimeMillis())
+            .apply()
+    }
+
+    fun getAccessToken(): String? {
+        return prefs.getString(KEY_ACCESS_TOKEN, null)
+    }
 
     fun isAccessTokenValid(): Boolean {
-        val expiry = encryptedPrefs.getLong(ACCESS_TOKEN_EXPIRY, 0)
-        return System.currentTimeMillis() < expiry
+        val token = getAccessToken() ?: return false
+        val timestamp = prefs.getLong(KEY_TOKEN_TIMESTAMP, 0)
+        return System.currentTimeMillis() - timestamp < TOKEN_VALIDITY_DURATION
     }
 
     fun isSessionTokenValid(): Boolean {
-        val expiry = encryptedPrefs.getLong(SESSION_TOKEN_EXPIRY, 0)
-        return System.currentTimeMillis() < expiry
+        val token = getSessionToken() ?: return false
+        val timestamp = prefs.getLong(KEY_TOKEN_TIMESTAMP, 0)
+        return System.currentTimeMillis() - timestamp < TOKEN_VALIDITY_DURATION
     }
 
     fun clearTokens() {
-        encryptedPrefs.edit().clear().apply()
+        prefs.edit()
+            .remove(KEY_SESSION_TOKEN)
+            .remove(KEY_ACCESS_TOKEN)
+            .remove(KEY_TOKEN_TIMESTAMP)
+            .apply()
     }
 }

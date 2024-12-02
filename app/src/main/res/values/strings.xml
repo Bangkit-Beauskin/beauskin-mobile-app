@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Bangkit[Capstone]</string>
-    <string name="otp_verification_instruction">We have sent the verification code to your email</string>
+    <string name="otp_verification_instruction">Enter the 6-digit code sent to your email</string>
+    <string name="resend_otp">Resend OTP</string>
+    <string name="resend_otp_countdown">Resend OTP (%d)</string>
+    <string name="invalid_otp_error">Please enter a valid 6-digit OTP code</string>
+    <string name="otp_resent_success">OTP resent successfully</string>
+    <string name="navigation_error">Failed to navigate to main screen</string>
+    <string name="error_empty_username">Username cannot be empty</string>
+    <string name="error_username_too_short">Username must be at least 3 characters</string>
+    <string name="msg_confirm_username">Please confirm or edit your display name</string>
 </resources>
