@@ -3,14 +3,13 @@ package com.dicoding.bangkitcapstone.auth
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.dicoding.bangkitcapstone.MainActivity
+import com.dicoding.bangkitcapstone.data.model.OtpResponse
 import com.dicoding.bangkitcapstone.databinding.ActivityOtpVerificationBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,28 +24,29 @@ class OtpVerificationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityOtpVerificationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Log.d("OtpVerification", "Activity created")
 
         setupViews()
         observeViewModel()
+        startCountdownTimer()
     }
 
     private fun setupViews() {
         binding.apply {
             btnBack.setOnClickListener {
-                finish()
+                onBackPressed()
             }
 
             btnVerifyOtp.setOnClickListener {
                 val otp = edtOtpCode.text.toString()
+                Log.d("OtpVerification", "Verify button clicked with OTP: $otp")
                 if (validateOtp(otp)) {
                     viewModel.verifyOtp(otp)
                 }
             }
 
-            btnResendOtp.isEnabled = false
-            startCountdownTimer()
-
             btnResendOtp.setOnClickListener {
+                Log.d("OtpVerification", "Resend OTP clicked")
                 viewModel.resendOtp()
                 btnResendOtp.isEnabled = false
                 startCountdownTimer()
@@ -54,12 +54,75 @@ class OtpVerificationActivity : AppCompatActivity() {
         }
     }
 
-    private fun validateOtp(otp: String): Boolean {
-        return if (otp.length != 6) {
-            binding.edtOtpCode.error = "Please enter a valid 6-digit OTP code"
-            false
+    private fun observeViewModel() {
+        viewModel.otpState.observe(this) { state ->
+            Log.d("OtpVerification", "OTP state changed: $state")
+            when (state) {
+                is OtpState.Loading -> {
+                    showLoading(true)
+                }
+                is OtpState.Success -> {
+                    showLoading(false)
+                    handleOtpSuccess(state.response)
+                }
+                is OtpState.Error -> {
+                    Log.e("OtpVerification", "Error state: ${state.message}")
+                    showLoading(false)
+                    showError(state.message)
+                }
+            }
+        }
+
+        viewModel.resendState.observe(this) { state ->
+            when (state) {
+                is AuthState.Loading -> {
+                    binding.btnResendOtp.isEnabled = false
+                }
+                is AuthState.Success -> {
+                    Toast.makeText(this, "OTP resent successfully", Toast.LENGTH_SHORT).show()
+                }
+                is AuthState.Error -> {
+                    binding.btnResendOtp.isEnabled = true
+                    showError(state.message)
+                }
+            }
+        }
+    }
+
+    private fun handleOtpSuccess(response: OtpResponse) {
+        Log.d("OtpVerification", "Handling OTP success: ${response.message}")
+
+        if (response.message.equals("User verified", ignoreCase = true)) {
+            Log.d("OtpVerification", "User verified successfully")
+
+            getSharedPreferences("auth", MODE_PRIVATE)
+                .edit()
+                .putBoolean("is_verified", true)
+                .apply()
+
+            navigateToMain()
         } else {
-            true
+            Log.d("OtpVerification", "OTP verification response indicates failure")
+            showError(response.message)
+        }
+    }
+
+    private fun navigateToMain() {
+        Log.d("OtpVerification", "Attempting to navigate to MainActivity")
+        try {
+            runOnUiThread {
+                val intent = Intent(this, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                }
+                startActivity(intent)
+                finish()
+            }
+            Log.d("OtpVerification", "Navigation to MainActivity initiated")
+        } catch (e: Exception) {
+            Log.e("OtpVerification", "Navigation failed", e)
+            showError("Failed to navigate to main screen: ${e.message}")
         }
     }
 
@@ -78,47 +141,12 @@ class OtpVerificationActivity : AppCompatActivity() {
         }.start()
     }
 
-    private fun observeViewModel() {
-        viewModel.otpState.observe(this) { state ->
-            when (state) {
-                is OtpState.Loading -> {
-                    showLoading(true)
-                }
-                is OtpState.Success -> {
-                    showLoading(false)
-                    if (state.response.success) {
-                        Log.d("OtpVerification", "Verification successful, preparing navigation")
-
-                        getSharedPreferences("auth", MODE_PRIVATE)
-                            .edit()
-                            .putBoolean("is_verified", true)
-                            .apply()
-
-                        Handler(Looper.getMainLooper()).post {
-                            try {
-                                Log.d("OtpVerification", "Starting MainActivity")
-
-                                val intent = Intent(this@OtpVerificationActivity, MainActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-
-                                startActivity(intent)
-                                finishAffinity()
-
-                                Log.d("OtpVerification", "Navigation complete")
-                            } catch (e: Exception) {
-                                Log.e("OtpVerification", "Navigation failed", e)
-                                showError("Navigation failed: ${e.message}")
-                            }
-                        }
-                    } else {
-                        showError(state.response.message)
-                    }
-                }
-                is OtpState.Error -> {
-                    showLoading(false)
-                    showError(state.message)
-                }
-            }
+    private fun validateOtp(otp: String): Boolean {
+        return if (otp.length != 6) {
+            binding.edtOtpCode.error = "Please enter a valid 6-digit OTP code"
+            false
+        } else {
+            true
         }
     }
 
@@ -127,18 +155,20 @@ class OtpVerificationActivity : AppCompatActivity() {
             progressBar.isVisible = isLoading
             btnVerifyOtp.isEnabled = !isLoading
             edtOtpCode.isEnabled = !isLoading
+            btnResendOtp.isEnabled = !isLoading
         }
     }
 
     private fun showError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        Log.e("OtpVerification", "Showing error: $message")
+        runOnUiThread {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
-        getSharedPreferences("auth", MODE_PRIVATE).edit()
-            .remove("password")
-            .apply()
+        Log.d("OtpVerification", "Activity destroyed")
     }
 }

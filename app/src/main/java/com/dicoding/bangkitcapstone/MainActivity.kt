@@ -17,18 +17,24 @@ import com.dicoding.bangkitcapstone.profile.ProfileActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         val prefs = getSharedPreferences("auth", MODE_PRIVATE)
         val token = prefs.getString("token", null)
         val isVerified = prefs.getBoolean("is_verified", false)
 
-        Log.d("MainActivity", "Token: $token, isVerified: $isVerified")
+        Log.d("MainActivity", "Auth Check - Token: $token, isVerified: $isVerified")
 
         if (token == null || !isVerified) {
-            Log.d("MainActivity", "No valid authentication, redirecting to login")
-            startActivity(Intent(this, LoginActivity::class.java))
+            Log.d("MainActivity", "Authentication invalid, redirecting to login")
+            startActivity(Intent(this, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            })
             finish()
             return
         }
+
+        setContentView(R.layout.activity_main)
 
         val darkMode = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
             .getBoolean("dark_mode", false)
@@ -39,10 +45,7 @@ class MainActivity : AppCompatActivity() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
 
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-
         setupBottomNavigation()
         setupWindowInsets()
     }
