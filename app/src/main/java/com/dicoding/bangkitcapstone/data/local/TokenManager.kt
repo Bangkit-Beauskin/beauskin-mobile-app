@@ -17,7 +17,7 @@ class TokenManager @Inject constructor(
         private const val KEY_SESSION_TOKEN = "session_token"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_TOKEN_TIMESTAMP = "token_timestamp"
-        private const val TOKEN_VALIDITY_DURATION = 45 * 60 * 1000 // 45 minutes in milliseconds
+        private const val TOKEN_VALIDITY_DURATION = 45 * 60 * 1000
     }
 
     fun saveSessionToken(token: String) {

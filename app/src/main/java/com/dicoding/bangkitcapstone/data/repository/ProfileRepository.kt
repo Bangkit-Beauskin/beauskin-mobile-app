@@ -2,14 +2,12 @@ package com.dicoding.bangkitcapstone.data.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.dicoding.bangkitcapstone.data.api.ApiService
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.data.model.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
