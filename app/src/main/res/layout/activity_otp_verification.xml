@@ -61,24 +61,89 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="32dp">
+            android:orientation="horizontal"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:weightSum="6">
 
             <EditText
-                android:id="@+id/edtOtpCode"
-                android:layout_width="match_parent"
+                android:id="@+id/edtOtp1"
+                android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:hint="Enter OTP"
-                android:background="@android:color/transparent"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/otp_box_background"
+                android:gravity="center"
                 android:inputType="number"
-                android:maxLength="6"
-                android:textAlignment="center"
-                android:padding="8dp"/>
+                android:maxLength="1"
+                android:imeOptions="actionNext"
+                android:textSize="20sp"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="@color/light_gray"/>
+            <EditText
+                android:id="@+id/edtOtp2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/otp_box_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:imeOptions="actionNext"
+                android:textSize="20sp"/>
+
+            <EditText
+                android:id="@+id/edtOtp3"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/otp_box_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:imeOptions="actionNext"
+                android:textSize="20sp"/>
+
+            <EditText
+                android:id="@+id/edtOtp4"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/otp_box_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:imeOptions="actionNext"
+                android:textSize="20sp"/>
+
+            <EditText
+                android:id="@+id/edtOtp5"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/otp_box_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:imeOptions="actionNext"
+                android:textSize="20sp"/>
+
+            <EditText
+                android:id="@+id/edtOtp6"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/otp_box_background"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="1"
+                android:imeOptions="actionDone"
+                android:textSize="20sp"/>
+
         </LinearLayout>
 
         <LinearLayout
@@ -123,8 +188,8 @@
             android:text="Verify"
             android:textAllCaps="false"
             android:layout_marginTop="32dp"
-            android:backgroundTint="@color/light_gray"
-            android:textColor="@color/black"/>
+            android:backgroundTint="@color/navy_blue"
+            android:textColor="@color/white"/>
 
     </LinearLayout>
 
