@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -16,12 +18,14 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.dicoding.bangkitcapstone.BuildConfig
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.data.model.ProfileData
 import com.dicoding.bangkitcapstone.data.model.ProfileState
@@ -38,10 +42,13 @@ class EditProfileActivity : AppCompatActivity() {
     private var _binding: ActivityEditProfileBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ProfileViewModel by viewModels()
+
     private var selectedImageUri: Uri? = null
     private var isImageChanged = false
     private var isNameChanged = false
     private lateinit var currentPhotoPath: String
+    private var imageLoadRetryCount = 0
+    private val MAX_RETRY_COUNT = 3
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -49,7 +56,7 @@ class EditProfileActivity : AppCompatActivity() {
         if (isGranted) {
             startCamera()
         } else {
-            Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
+            showError(getString(R.string.camera_permission_required))
         }
     }
 
@@ -87,8 +94,14 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun setupViews() {
         binding.apply {
-            btnBack.setOnClickListener { finish() }
+            btnBack.setOnClickListener {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
+
             btnSave.setOnClickListener { handleSave() }
+            btnSave.isEnabled = false
+
             btnEditImage.setOnClickListener { showImagePickerDialog() }
 
             edtName.addTextChangedListener(object : TextWatcher {
@@ -100,8 +113,6 @@ class EditProfileActivity : AppCompatActivity() {
                     updateSaveButtonState()
                 }
             })
-
-            btnSave.isEnabled = false
         }
     }
 
@@ -138,13 +149,18 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        val photoFile = createImageFile()
-        val photoURI = FileProvider.getUriForFile(
-            this,
-            "${applicationContext.packageName}.provider",
-            photoFile
-        )
-        takePicture.launch(photoURI)
+        try {
+            val photoFile = createImageFile()
+            val photoURI = FileProvider.getUriForFile(
+                this,
+                "${BuildConfig.APPLICATION_ID}.provider",
+                photoFile
+            )
+            takePicture.launch(photoURI)
+        } catch (e: Exception) {
+            Log.e("EditProfileActivity", "Error starting camera", e)
+            showError("Failed to start camera")
+        }
     }
 
     private fun createImageFile(): File {
@@ -159,12 +175,12 @@ class EditProfileActivity : AppCompatActivity() {
         }
     }
 
-
     private fun handleSave() {
         val username = binding.edtName.text.toString()
         if (!validateInput(username)) return
 
         showLoading(true)
+
         viewModel.updateProfile(username)
 
         if (isImageChanged && selectedImageUri != null) {
@@ -182,7 +198,7 @@ class EditProfileActivity : AppCompatActivity() {
                 }
                 is ProfileState.Error -> {
                     showLoading(false)
-                    showError(state.message)
+                    handleError(state.message)
                 }
             }
         }
@@ -221,21 +237,28 @@ class EditProfileActivity : AppCompatActivity() {
         }
     }
 
-
     private fun loadProfileImage(url: String?) {
-        if (url.isNullOrEmpty()) {
+        Log.d("EditProfileActivity", "Loading profile image with URL: $url")
+
+        if (!isValidImageUrl(url)) {
+            Log.d("EditProfileActivity", "Invalid or null URL, using default image")
             binding.profileImage.setImageResource(R.drawable.baseline_person_24)
             binding.profileImage.setBackgroundResource(R.drawable.profile_placeholder)
-            binding.progressBar.visibility = View.GONE
+            binding.progressBar.isVisible = false
             return
         }
 
-        binding.progressBar.visibility = View.VISIBLE
+        binding.progressBar.isVisible = true
+
+        val secureUrl = url!!.replace("http://", "https://").trim()
+        Log.d("EditProfileActivity", "Using secure URL: $secureUrl")
 
         Glide.with(this)
-            .load(url)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .skipMemoryCache(true)
+            .load(secureUrl)
+            .timeout(30000)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.baseline_person_24)
+            .error(R.drawable.baseline_person_24)
             .circleCrop()
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -244,9 +267,21 @@ class EditProfileActivity : AppCompatActivity() {
                     target: Target<Drawable>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.progressBar.visibility = View.GONE
-                    binding.profileImage.setImageResource(R.drawable.baseline_person_24)
-                    Log.e("EditProfileActivity", "Image load failed for URL: $url", e)
+                    binding.progressBar.isVisible = false
+                    Log.e("EditProfileActivity", "Failed to load image from URL: $secureUrl", e)
+                    e?.logRootCauses("EditProfileActivity")
+
+                    if (imageLoadRetryCount < MAX_RETRY_COUNT) {
+                        imageLoadRetryCount++
+                        Log.d("EditProfileActivity", "Retrying image load (attempt $imageLoadRetryCount)")
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            loadProfileImage(url)
+                        }, 1000)
+                    } else {
+                        Log.e("EditProfileActivity", "Max retry attempts reached")
+                        showError("Unable to load profile image")
+                        imageLoadRetryCount = 0
+                    }
                     return false
                 }
 
@@ -257,8 +292,10 @@ class EditProfileActivity : AppCompatActivity() {
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.progressBar.visibility = View.GONE
+                    binding.progressBar.isVisible = false
                     binding.profileImage.background = null
+                    imageLoadRetryCount = 0
+                    Log.d("EditProfileActivity", "Image loaded successfully from $dataSource")
                     return false
                 }
             })
@@ -266,7 +303,7 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     private fun previewSelectedImage(uri: Uri) {
-        binding.progressBar.visibility = View.VISIBLE
+        binding.progressBar.isVisible = true
         binding.profileImage.background = null
 
         Glide.with(this)
@@ -281,7 +318,7 @@ class EditProfileActivity : AppCompatActivity() {
                     target: Target<Drawable>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.progressBar.visibility = View.GONE
+                    binding.progressBar.isVisible = false
                     showError("Failed to load selected image")
                     Log.e("EditProfileActivity", "Preview image load failed", e)
                     return false
@@ -294,7 +331,7 @@ class EditProfileActivity : AppCompatActivity() {
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.progressBar.visibility = View.GONE
+                    binding.progressBar.isVisible = false
                     Log.d("EditProfileActivity", "Preview image loaded successfully")
                     return false
                 }
@@ -314,6 +351,12 @@ class EditProfileActivity : AppCompatActivity() {
         return true
     }
 
+    private fun isValidImageUrl(url: String?): Boolean {
+        return !url.isNullOrEmpty() &&
+                (url.startsWith("http://") || url.startsWith("https://")) &&
+                url != "null"
+    }
+
     private fun updateSaveButtonState() {
         val username = binding.edtName.text.toString()
         val isValidName = username.length >= 3
@@ -322,11 +365,21 @@ class EditProfileActivity : AppCompatActivity() {
 
     private fun showLoading(isLoading: Boolean) {
         binding.apply {
-            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            progressBar.isVisible = isLoading
             btnSave.isEnabled = !isLoading
             btnEditImage.isEnabled = !isLoading
             edtName.isEnabled = !isLoading
-            loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
+            loadingOverlay.isVisible = isLoading
+        }
+    }
+
+    private fun handleError(message: String) {
+        when {
+            message.contains("401") -> {
+                showError("Session expired. Please login again")
+                finish()
+            }
+            else -> showError(message)
         }
     }
 

@@ -2,6 +2,7 @@ package com.dicoding.bangkitcapstone.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.dicoding.bangkitcapstone.data.api.ApiService
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.data.model.*
@@ -22,19 +23,30 @@ class ProfileRepository @Inject constructor(
     private val tokenManager: TokenManager,
     @ApplicationContext private val context: Context
 ) {
-
     suspend fun getProfile(): Result<ProfileResponse> = withContext(Dispatchers.IO) {
         try {
             val token = tokenManager.getSessionToken() ?: tokenManager.getAccessToken()
             ?: return@withContext Result.failure(Exception("No valid token found"))
 
+            Log.d("ProfileRepository", "Fetching profile with token: ${token.take(10)}...")
+
             val response = apiService.getProfile("Bearer $token")
+
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val profileResponse = response.body()!!
+                Log.d("ProfileRepository", "Profile fetch success: ${profileResponse.data}")
+
+                val profileUrl = profileResponse.data.profileUrl
+                Log.d("ProfileRepository", "Validated profile URL: $profileUrl")
+
+                Result.success(profileResponse)
             } else {
+                Log.e("ProfileRepository", "Profile fetch failed: ${response.code()}")
+                Log.e("ProfileRepository", "Error body: ${response.errorBody()?.string()}")
                 Result.failure(Exception("Failed to get profile: ${response.code()}"))
             }
         } catch (e: Exception) {
+            Log.e("ProfileRepository", "Profile fetch exception", e)
             Result.failure(e)
         }
     }
@@ -42,6 +54,7 @@ class ProfileRepository @Inject constructor(
     suspend fun uploadProfilePhoto(photoUri: Uri, username: String): Result<UpdateProfileResponse> = withContext(Dispatchers.IO) {
         try {
             val file = File(context.cacheDir, "profile_photo_${System.currentTimeMillis()}.jpg")
+            Log.d("ProfileRepository", "Creating temp file for upload: ${file.absolutePath}")
 
             context.contentResolver.openInputStream(photoUri)?.use { input ->
                 file.outputStream().use { output ->
@@ -53,35 +66,50 @@ class ProfileRepository @Inject constructor(
             val photoPart = MultipartBody.Part.createFormData("file", file.name, requestBody)
             val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
 
+            val token = tokenManager.getSessionToken() ?: return@withContext Result.failure(Exception("No session token found"))
+
             try {
-                val response = apiService.uploadProfilePhoto("Bearer ${tokenManager.getSessionToken()}", photoPart, usernamePart)
+                Log.d("ProfileRepository", "Uploading profile photo...")
+                val response = apiService.uploadProfilePhoto("Bearer $token", photoPart, usernamePart)
+
                 if (response.isSuccessful && response.body() != null) {
-                    Result.success(response.body()!!)
+                    val result = response.body()!!
+                    Log.d("ProfileRepository", "Upload success. New profile URL: ${result.data?.profileUrl}")
+                    Result.success(result)
                 } else {
+                    Log.e("ProfileRepository", "Upload failed: ${response.code()}")
                     Result.failure(Exception("Failed to upload photo: ${response.code()}"))
                 }
             } finally {
                 file.delete()
             }
         } catch (e: Exception) {
+            Log.e("ProfileRepository", "Upload exception", e)
             Result.failure(e)
         }
     }
 
     suspend fun updateProfile(username: String, profileUrl: String?): Result<UpdateProfileResponse> = withContext(Dispatchers.IO) {
         try {
-            val token = tokenManager.getSessionToken() ?: tokenManager.getAccessToken()
-            ?: return@withContext Result.failure(Exception("No valid token found"))
+            val token = tokenManager.getSessionToken() ?: return@withContext Result.failure(Exception("No valid token"))
+
+            Log.d("ProfileRepository", "Updating profile - Username: $username, URL: $profileUrl")
 
             val request = UpdateProfileRequest(username = username, profileUrl = profileUrl)
             val response = apiService.updateProfile("Bearer $token", request)
 
+            Log.d("ProfileRepository", "Update response: $response")
+
             if (response.isSuccessful && response.body() != null) {
+                Log.d("ProfileRepository", "Update successful: ${response.body()}")
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Failed to update profile: ${response.code()}"))
+                val error = "Update failed: ${response.code()} - ${response.errorBody()?.string()}"
+                Log.e("ProfileRepository", error)
+                Result.failure(Exception(error))
             }
         } catch (e: Exception) {
+            Log.e("ProfileRepository", "Exception during update", e)
             Result.failure(e)
         }
     }

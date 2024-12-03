@@ -1,7 +1,7 @@
 package com.dicoding.bangkitcapstone.profile
 
-import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,14 +10,12 @@ import com.dicoding.bangkitcapstone.data.model.ProfileState
 import com.dicoding.bangkitcapstone.data.model.UpdateProfileState
 import com.dicoding.bangkitcapstone.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val repository: ProfileRepository,
-    @ApplicationContext private val context: Context
+    private val repository: ProfileRepository
 ) : ViewModel() {
 
     private var currentUsername: String = ""
@@ -37,16 +35,62 @@ class ProfileViewModel @Inject constructor(
             try {
                 repository.getProfile().fold(
                     onSuccess = { response ->
-                        currentUsername = response.data.username
-                        currentProfileUrl = response.data.profileUrl
-                        _profileState.value = ProfileState.Success(response.data)
+                        Log.d("ProfileViewModel", "Profile fetch success: ${response.data}")
+
+                        val profileData = response.data.copy(
+                            profileUrl = validateProfileUrl(response.data.profileUrl)
+                        )
+
+                        _profileState.value = ProfileState.Success(profileData)
                     },
                     onFailure = { error ->
-                        _profileState.value = ProfileState.Error(error.message ?: "Failed to fetch profile")
+                        Log.e("ProfileViewModel", "Profile fetch error", error)
+                        _profileState.value = ProfileState.Error(
+                            error.message ?: "Failed to fetch profile"
+                        )
                     }
                 )
             } catch (e: Exception) {
-                _profileState.value = ProfileState.Error(e.message ?: "Unknown error occurred")
+                Log.e("ProfileViewModel", "Exception in fetchProfile", e)
+                _profileState.value = ProfileState.Error(
+                    e.message ?: "Unknown error occurred"
+                )
+            }
+        }
+    }
+
+    private fun validateProfileUrl(url: String?): String? {
+        return when {
+            url == null -> null
+            url.isEmpty() -> null
+            !url.startsWith("http://") && !url.startsWith("https://") -> "https://$url"
+            url.startsWith("http://") -> url.replace("http://", "https://")
+            else -> url
+        }.also {
+            Log.d("ProfileViewModel", "Validated profile URL: $it")
+        }
+    }
+
+    fun updateProfile(username: String) {
+        viewModelScope.launch {
+            _updateState.value = UpdateProfileState.Loading
+            try {
+                repository.updateProfile(username, currentProfileUrl).fold(
+                    onSuccess = { response ->
+                        if (response.code == 200) {
+                            currentUsername = username
+                            _updateState.value = UpdateProfileState.Success(response.message)
+                            fetchProfile()
+                        } else {
+                            _updateState.value = UpdateProfileState.Error("Failed to update profile: ${response.message}")
+                        }
+                    },
+                    onFailure = { error ->
+                        _updateState.value = UpdateProfileState.Error(error.message ?: "Failed to update profile")
+                    }
+                )
+            } catch (e: Exception) {
+                _updateState.value = UpdateProfileState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
@@ -72,30 +116,6 @@ class ProfileViewModel @Inject constructor(
                 )
             } catch (e: Exception) {
                 _updateState.value = UpdateProfileState.Error("Upload error: ${e.message}")
-            }
-        }
-    }
-
-    fun updateProfile(username: String) {
-        viewModelScope.launch {
-            _updateState.value = UpdateProfileState.Loading
-            try {
-                repository.updateProfile(username, currentProfileUrl).fold(
-                    onSuccess = { response ->
-                        if (response.code == 200) {
-                            currentUsername = username
-                            _updateState.value = UpdateProfileState.Success(response.message)
-                            fetchProfile()
-                        } else {
-                            _updateState.value = UpdateProfileState.Error("Failed to update profile: ${response.message}")
-                        }
-                    },
-                    onFailure = { error ->
-                        _updateState.value = UpdateProfileState.Error(error.message ?: "Failed to update profile")
-                    }
-                )
-            } catch (e: Exception) {
-                _updateState.value = UpdateProfileState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }

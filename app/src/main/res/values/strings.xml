@@ -9,4 +9,5 @@
     <string name="error_empty_username">Username cannot be empty</string>
     <string name="error_username_too_short">Username must be at least 3 characters</string>
     <string name="msg_confirm_username">Please confirm or edit your display name</string>
+    <string name="camera_permission_required">Camera permission is required to take photos</string>
 </resources>

@@ -2,34 +2,46 @@ package com.dicoding.bangkitcapstone.profile
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
-import android.graphics.drawable.Drawable
 import com.dicoding.bangkitcapstone.MainActivity
 import com.dicoding.bangkitcapstone.R
+import com.dicoding.bangkitcapstone.auth.LoginActivity
 import com.dicoding.bangkitcapstone.chat.ChatActivity
 import com.dicoding.bangkitcapstone.data.model.ProfileData
 import com.dicoding.bangkitcapstone.data.model.ProfileState
 import com.dicoding.bangkitcapstone.databinding.ActivityProfileBinding
 import com.dicoding.bangkitcapstone.scan.ScanActivity
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.activity.result.contract.ActivityResultContracts
+import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 
 @AndroidEntryPoint
 class ProfileActivity : AppCompatActivity() {
     private var _binding: ActivityProfileBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ProfileViewModel by viewModels()
-    private val EDIT_PROFILE_REQUEST = 100
+    private var imageLoadRetryCount = 0
+    private val MAX_RETRY_COUNT = 3
 
+    private val editProfileLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            fetchProfile()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,8 +60,7 @@ class ProfileActivity : AppCompatActivity() {
             }
 
             btnEdit.setOnClickListener {
-                val intent = Intent(this@ProfileActivity, EditProfileActivity::class.java)
-                startActivityForResult(intent, EDIT_PROFILE_REQUEST)
+                editProfileLauncher.launch(Intent(this@ProfileActivity, EditProfileActivity::class.java))
             }
 
             btnHistory.setOnClickListener {
@@ -92,48 +103,64 @@ class ProfileActivity : AppCompatActivity() {
     private fun observeViewModel() {
         viewModel.profileState.observe(this) { state ->
             when (state) {
-                is ProfileState.Loading -> {
-                    showLoading(true)
-                }
+                is ProfileState.Loading -> showLoading(true)
                 is ProfileState.Success -> {
                     showLoading(false)
                     updateUI(state.data)
                 }
                 is ProfileState.Error -> {
                     showLoading(false)
-                    showError(state.message)
+                    handleError(state.message)
                 }
             }
         }
     }
 
     private fun updateUI(profileData: ProfileData) {
+        Log.d("ProfileActivity", "Updating UI with profile data: $profileData")
+
         binding.apply {
-            profileName.text = profileData.username
-            loadProfileImage(profileData.profileUrl)
+            profileName.text = profileData.username.ifEmpty {
+                profileData.email.substringBefore("@")
+            }
+
             btnEdit.isEnabled = profileData.isVerified
+
+            if (!profileData.isVerified) {
+                showVerificationNeededDialog()
+            }
+
+            if (profileData.profileUrl.isNullOrEmpty()) {
+                Log.d("ProfileActivity", "No profile URL available, using default image")
+                profileImage.setImageResource(R.drawable.baseline_person_24)
+                profileImage.setBackgroundResource(R.drawable.profile_placeholder)
+            } else {
+                Log.d("ProfileActivity", "Loading profile image from URL: ${profileData.profileUrl}")
+                loadProfileImage(profileData.profileUrl)
+            }
         }
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == EDIT_PROFILE_REQUEST && resultCode == RESULT_OK) {
-            fetchProfile()
-        }
-    }
-
 
     private fun loadProfileImage(url: String?) {
-        if (url.isNullOrEmpty()) {
+        Log.d("ProfileActivity", "Loading profile image with URL: $url")
+
+        if (!isValidImageUrl(url)) {
+            Log.d("ProfileActivity", "Invalid or null URL, using default image")
             binding.profileImage.setImageResource(R.drawable.baseline_person_24)
             binding.profileImage.setBackgroundResource(R.drawable.profile_placeholder)
+            binding.progressBar.isVisible = false
             return
         }
 
+        binding.progressBar.isVisible = true
+
+        val secureUrl = url!!.replace("http://", "https://").trim()
+        Log.d("ProfileActivity", "Using secure URL: $secureUrl")
+
         Glide.with(this)
-            .load(url)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .skipMemoryCache(true)
+            .load(secureUrl)
+            .timeout(30000)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
             .placeholder(R.drawable.baseline_person_24)
             .error(R.drawable.baseline_person_24)
             .circleCrop()
@@ -144,9 +171,21 @@ class ProfileActivity : AppCompatActivity() {
                     target: Target<Drawable>,
                     isFirstResource: Boolean
                 ): Boolean {
-                    binding.profileImage.setImageResource(R.drawable.baseline_person_24)
-                    binding.profileImage.setBackgroundResource(R.drawable.profile_placeholder)
-                    Log.e("ProfileActivity", "Image load failed: $url", e)
+                    binding.progressBar.isVisible = false
+                    Log.e("ProfileActivity", "Image load failed for URL: $secureUrl", e)
+                    e?.logRootCauses("ProfileActivity")
+
+                    if (imageLoadRetryCount < MAX_RETRY_COUNT) {
+                        imageLoadRetryCount++
+                        Log.d("ProfileActivity", "Retrying image load (attempt $imageLoadRetryCount)")
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            loadProfileImage(url)
+                        }, 1000)
+                    } else {
+                        Log.e("ProfileActivity", "Max retry attempts reached")
+                        showError("Unable to load profile image")
+                        imageLoadRetryCount = 0
+                    }
                     return false
                 }
 
@@ -157,16 +196,43 @@ class ProfileActivity : AppCompatActivity() {
                     dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
+                    binding.progressBar.isVisible = false
                     binding.profileImage.background = null
+                    imageLoadRetryCount = 0
+                    Log.d("ProfileActivity", "Image loaded successfully from $dataSource")
                     return false
                 }
             })
             .into(binding.profileImage)
     }
 
+    private fun isValidImageUrl(url: String?): Boolean {
+        return !url.isNullOrEmpty() &&
+                (url.startsWith("http://") || url.startsWith("https://")) &&
+                url != "null"
+    }
+
+    private fun showVerificationNeededDialog() {
+        Log.d("ProfileActivity", "Verification needed dialog would show here")
+    }
+
+
+    private fun handleError(message: String) {
+        when {
+            message.contains("401") -> {
+                logout()
+            }
+            else -> showError(message)
+        }
+    }
+
+    private fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
     private fun showLoading(isLoading: Boolean) {
         binding.apply {
-            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            progressBar.isVisible = isLoading
             profileCard.isEnabled = !isLoading
             btnEdit.isEnabled = !isLoading
             btnHistory.isEnabled = !isLoading
@@ -175,8 +241,16 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun showError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    private fun logout() {
+        getSharedPreferences("auth", MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
+
+        startActivity(Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
     }
 
     private fun fetchProfile() {
