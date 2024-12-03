@@ -5,10 +5,18 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import com.dicoding.bangkitcapstone.MainActivity
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.auth.LoginActivity
+import com.dicoding.bangkitcapstone.data.local.TokenManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
 
     private val SPLASH_DURATION: Long = 3000
 
@@ -19,7 +27,12 @@ class SplashActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, LoginActivity::class.java))
+            val intent = if (tokenManager.isLoggedIn()) {
+                Intent(this, MainActivity::class.java)
+            } else {
+                Intent(this, LoginActivity::class.java)
+            }
+            startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
         }, SPLASH_DURATION)

@@ -17,6 +17,7 @@ class TokenManager @Inject constructor(
         private const val KEY_SESSION_TOKEN = "session_token"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_TOKEN_TIMESTAMP = "token_timestamp"
+        private const val KEY_IS_LOGGED_IN = "is_logged_in"
         private const val TOKEN_VALIDITY_DURATION = 45 * 60 * 1000
     }
 
@@ -24,6 +25,7 @@ class TokenManager @Inject constructor(
         prefs.edit()
             .putString(KEY_SESSION_TOKEN, token)
             .putLong(KEY_TOKEN_TIMESTAMP, System.currentTimeMillis())
+            .putBoolean(KEY_IS_LOGGED_IN, true)
             .apply()
     }
 
@@ -35,11 +37,16 @@ class TokenManager @Inject constructor(
         prefs.edit()
             .putString(KEY_ACCESS_TOKEN, token)
             .putLong(KEY_TOKEN_TIMESTAMP, System.currentTimeMillis())
+            .putBoolean(KEY_IS_LOGGED_IN, true)
             .apply()
     }
 
     fun getAccessToken(): String? {
         return prefs.getString(KEY_ACCESS_TOKEN, null)
+    }
+
+    fun isLoggedIn(): Boolean {
+        return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }
 
     fun isAccessTokenValid(): Boolean {
@@ -59,6 +66,7 @@ class TokenManager @Inject constructor(
             .remove(KEY_SESSION_TOKEN)
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_TOKEN_TIMESTAMP)
+            .putBoolean(KEY_IS_LOGGED_IN, false)
             .apply()
     }
 }

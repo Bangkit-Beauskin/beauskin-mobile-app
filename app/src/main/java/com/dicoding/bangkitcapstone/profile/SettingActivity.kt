@@ -1,15 +1,29 @@
 package com.dicoding.bangkitcapstone.profile
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.dicoding.bangkitcapstone.R
+import com.dicoding.bangkitcapstone.auth.LoginActivity
+import com.dicoding.bangkitcapstone.data.local.TokenManager
+import com.dicoding.bangkitcapstone.data.repository.AuthRepository
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SettingActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+
+    @Inject
+    lateinit var authRepository: AuthRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_setting)
@@ -24,7 +38,7 @@ class SettingActivity : AppCompatActivity() {
         }
 
         findViewById<MaterialCardView>(R.id.logoutCard).setOnClickListener {
-            // Handle logout logic here
+            logout()
         }
 
         switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
@@ -38,5 +52,15 @@ class SettingActivity : AppCompatActivity() {
 
             recreate()
         }
+    }
+
+    private fun logout() {
+        authRepository.clearAuth()
+        tokenManager.clearTokens()
+
+        startActivity(Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
     }
 }

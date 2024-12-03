@@ -10,23 +10,25 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.dicoding.bangkitcapstone.auth.LoginActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.dicoding.bangkitcapstone.scan.ScanActivity
 import com.dicoding.bangkitcapstone.chat.ChatActivity
+import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.profile.ProfileActivity
+import com.dicoding.bangkitcapstone.scan.ScanActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
-        val token = prefs.getString("token", null)
-        val isVerified = prefs.getBoolean("is_verified", false)
-
-        Log.d("MainActivity", "Auth Check - Token: $token, isVerified: $isVerified")
-
-        if (token == null || !isVerified) {
-            Log.d("MainActivity", "Authentication invalid, redirecting to login")
+        if (!tokenManager.isLoggedIn()) {
+            Log.d("MainActivity", "User not logged in, redirecting to login")
             startActivity(Intent(this, LoginActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             })
