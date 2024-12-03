@@ -4,6 +4,7 @@ import com.dicoding.bangkitcapstone.data.model.AuthResponse
 import com.dicoding.bangkitcapstone.data.model.LoginRequest
 import com.dicoding.bangkitcapstone.data.model.OtpRequest
 import com.dicoding.bangkitcapstone.data.model.OtpResponse
+import com.dicoding.bangkitcapstone.data.model.ProductResponse
 import com.dicoding.bangkitcapstone.data.model.ProfileResponse
 import com.dicoding.bangkitcapstone.data.model.RegisterRequest
 import com.dicoding.bangkitcapstone.data.model.TokenResponse
@@ -18,6 +19,7 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface ApiService {
     @POST("api/v1/auths/login")
@@ -55,4 +57,12 @@ interface ApiService {
     suspend fun getProfile(
         @Header("Authorization") token: String
     ): Response<ProfileResponse>
+
+    @GET("api/v1/products")
+    suspend fun getProducts(
+        @Header("Authorization") token: String
+    ): Response<ProductResponse>
+
+    @GET("api/v1/products/{id}")
+    suspend fun getProductDetail(@Path("id") id: String): Response<ProductResponse>
 }

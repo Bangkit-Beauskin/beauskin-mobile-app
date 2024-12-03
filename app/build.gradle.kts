@@ -102,5 +102,19 @@ dependencies {
     implementation("com.tbuonomo:dotsindicator:4.3")
 
 
+    // Recycle view
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // ViewModel and LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+    // Material Design components
+    implementation("com.google.android.material:material:1.11.0")
+
 }
 
