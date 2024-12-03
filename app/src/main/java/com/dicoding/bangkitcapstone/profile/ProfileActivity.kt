@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.dicoding.bangkitcapstone.MainActivity
+import com.dicoding.bangkitcapstone.main.MainActivity
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.auth.LoginActivity
 import com.dicoding.bangkitcapstone.chat.ChatActivity

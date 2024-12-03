@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.kapt")
     id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -71,8 +72,8 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 
-    // ViewModel
-    implementation ("androidx.activity:activity-ktx:1.7.2")
+//    // ViewModel
+//   implementation ("androidx.activity:activity-ktx:1.7.2")
 
     // Security
     implementation ("androidx.security:security-crypto:1.1.0-alpha06")
@@ -83,6 +84,20 @@ dependencies {
     // Glide
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Recycle view
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // ViewModel and LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+    // Material Design components
+    implementation("com.google.android.material:material:1.11.0")
 
 }
 
