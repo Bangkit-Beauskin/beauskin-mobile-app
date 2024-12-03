@@ -51,22 +51,27 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+
     fun uploadProfilePhoto(photoUri: Uri, username: String) {
         viewModelScope.launch {
             _updateState.value = UpdateProfileState.Loading
             try {
                 repository.uploadProfilePhoto(photoUri, username).fold(
                     onSuccess = { response ->
-                        currentProfileUrl = response.data?.profileUrl
-                        _updateState.value = UpdateProfileState.Success(response.message)
-                        fetchProfile()
+                        if (response.code == 200) {
+                            currentProfileUrl = response.data?.profileUrl
+                            _updateState.value = UpdateProfileState.Success(response.message)
+                            fetchProfile()
+                        } else {
+                            _updateState.value = UpdateProfileState.Error("Upload failed: ${response.message}")
+                        }
                     },
                     onFailure = { error ->
-                        _updateState.value = UpdateProfileState.Error(error.message ?: "Failed to upload photo")
+                        _updateState.value = UpdateProfileState.Error(error.message ?: "Upload failed")
                     }
                 )
             } catch (e: Exception) {
-                _updateState.value = UpdateProfileState.Error(e.message ?: "Unknown error occurred")
+                _updateState.value = UpdateProfileState.Error("Upload error: ${e.message}")
             }
         }
     }
@@ -77,9 +82,13 @@ class ProfileViewModel @Inject constructor(
             try {
                 repository.updateProfile(username, currentProfileUrl).fold(
                     onSuccess = { response ->
-                        currentUsername = username
-                        _updateState.value = UpdateProfileState.Success(response.message)
-                        fetchProfile()
+                        if (response.code == 200) {
+                            currentUsername = username
+                            _updateState.value = UpdateProfileState.Success(response.message)
+                            fetchProfile()
+                        } else {
+                            _updateState.value = UpdateProfileState.Error("Failed to update profile: ${response.message}")
+                        }
                     },
                     onFailure = { error ->
                         _updateState.value = UpdateProfileState.Error(error.message ?: "Failed to update profile")

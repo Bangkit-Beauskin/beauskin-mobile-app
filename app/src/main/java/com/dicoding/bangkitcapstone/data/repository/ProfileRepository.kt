@@ -41,22 +41,20 @@ class ProfileRepository @Inject constructor(
 
     suspend fun uploadProfilePhoto(photoUri: Uri, username: String): Result<UpdateProfileResponse> = withContext(Dispatchers.IO) {
         try {
-            val token = tokenManager.getSessionToken() ?: tokenManager.getAccessToken()
-            ?: return@withContext Result.failure(Exception("No valid token found"))
-
             val file = File(context.cacheDir, "profile_photo_${System.currentTimeMillis()}.jpg")
-            try {
-                context.contentResolver.openInputStream(photoUri)?.use { input ->
-                    file.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
+
+            context.contentResolver.openInputStream(photoUri)?.use { input ->
+                file.outputStream().use { output ->
+                    input.copyTo(output)
                 }
+            }
 
-                val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                val photoPart = MultipartBody.Part.createFormData("file", file.name, requestBody)
-                val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
+            val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+            val photoPart = MultipartBody.Part.createFormData("file", file.name, requestBody)
+            val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
 
-                val response = apiService.uploadProfilePhoto("Bearer $token", photoPart, usernamePart)
+            try {
+                val response = apiService.uploadProfilePhoto("Bearer ${tokenManager.getSessionToken()}", photoPart, usernamePart)
                 if (response.isSuccessful && response.body() != null) {
                     Result.success(response.body()!!)
                 } else {

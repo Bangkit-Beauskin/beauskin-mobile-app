@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -158,15 +159,16 @@ class EditProfileActivity : AppCompatActivity() {
         }
     }
 
+
     private fun handleSave() {
         val username = binding.edtName.text.toString()
         if (!validateInput(username)) return
 
         showLoading(true)
+        viewModel.updateProfile(username)
+
         if (isImageChanged && selectedImageUri != null) {
             viewModel.uploadProfilePhoto(selectedImageUri!!, username)
-        } else if (isNameChanged) {
-            viewModel.updateProfile(username)
         }
     }
 
@@ -219,6 +221,7 @@ class EditProfileActivity : AppCompatActivity() {
         }
     }
 
+
     private fun loadProfileImage(url: String?) {
         if (url.isNullOrEmpty()) {
             binding.profileImage.setImageResource(R.drawable.baseline_person_24)
@@ -233,6 +236,7 @@ class EditProfileActivity : AppCompatActivity() {
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.NONE)
             .skipMemoryCache(true)
+            .circleCrop()
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
                     e: GlideException?,
@@ -242,6 +246,7 @@ class EditProfileActivity : AppCompatActivity() {
                 ): Boolean {
                     binding.progressBar.visibility = View.GONE
                     binding.profileImage.setImageResource(R.drawable.baseline_person_24)
+                    Log.e("EditProfileActivity", "Image load failed for URL: $url", e)
                     return false
                 }
 
@@ -257,7 +262,6 @@ class EditProfileActivity : AppCompatActivity() {
                     return false
                 }
             })
-            .circleCrop()
             .into(binding.profileImage)
     }
 
@@ -278,7 +282,8 @@ class EditProfileActivity : AppCompatActivity() {
                     isFirstResource: Boolean
                 ): Boolean {
                     binding.progressBar.visibility = View.GONE
-                    showError("Failed to load image")
+                    showError("Failed to load selected image")
+                    Log.e("EditProfileActivity", "Preview image load failed", e)
                     return false
                 }
 
@@ -290,6 +295,7 @@ class EditProfileActivity : AppCompatActivity() {
                     isFirstResource: Boolean
                 ): Boolean {
                     binding.progressBar.visibility = View.GONE
+                    Log.d("EditProfileActivity", "Preview image loaded successfully")
                     return false
                 }
             })
