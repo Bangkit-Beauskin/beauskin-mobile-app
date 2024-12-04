@@ -10,4 +10,16 @@
     <string name="error_username_too_short">Username must be at least 3 characters</string>
     <string name="msg_confirm_username">Please confirm or edit your display name</string>
     <string name="camera_permission_required">Camera permission is required to take photos</string>
+
+    <!-- Permission messages -->
+    <string name="permission_rationale">Please grant access to all required permissions for the camera and gallery to ensure the app works properly.</string>
+    <string name="permission_permanently_denied">Permission is required. Please enable it in settings.</string>
+    <string name="permission_granted">Permission Granted</string>
+    <string name="grant">Grant</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="Desc_scan_your_Skin">Scan your skin type and acne problems</string>
+    <string name="capture">Capture</string>
+    <string name="upload_imagestext">Upload Image</string>
+
 </resources>
