@@ -2,15 +2,16 @@ package com.dicoding.bangkitcapstone.scan
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.dicoding.bangkitcapstone.R
+import com.dicoding.bangkitcapstone.databinding.ActivityScanBinding
 
 class ScanActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityScanBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scan)
+        binding = ActivityScanBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.frame, FragmentScanskintype())
-            .commit()
     }
 }

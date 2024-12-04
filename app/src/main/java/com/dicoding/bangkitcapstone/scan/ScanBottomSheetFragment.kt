@@ -33,6 +33,7 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
 
         binding.imageButtonUpload.setOnClickListener {
             navigateToScanActivity()
+            dismiss()
         }
     }
 
@@ -41,9 +42,9 @@ class ScanBottomSheetFragment : BottomSheetDialogFragment() {
         val intent = Intent(requireContext(), ScanActivity::class.java)
         Log.d("ScanBottomSheetFragment", "Navigating to ScanActivity")
         startActivity(intent)
+
     }
 
-    // Clean up resources and delete the image file when the fragment is destroyed
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

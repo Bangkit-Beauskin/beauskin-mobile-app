@@ -25,8 +25,9 @@
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Scan your skin type"
-            android:textSize="20sp"
+            android:fontFamily="@font/poppins_bold"
+            android:text="@string/scan_your_skin_type"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/btnBack"
             app:layout_constraintEnd_toEndOf="parent"
@@ -39,11 +40,13 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="28dp"
             android:layout_marginTop="16dp"
-            android:drawableStart="@drawable/mdi_number1"
             android:drawablePadding="8dp"
+            android:fontFamily="@font/poppins_regular"
             android:gravity="center"
-            android:text="Front Face Photo"
-            android:textSize="16sp"
+            android:text="@string/front_face_photo"
+            android:textSize="20sp"
+
+            app:drawableStartCompat="@drawable/mdi_number1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnBack" />
 
@@ -71,14 +74,15 @@
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
             android:drawablePadding="16dp"
+            android:fontFamily="@font/poppins_regular"
             android:gravity="center"
-            android:text="Example Front Face photo"
-            android:textSize="15sp"
+            android:text="@string/example_front_face_photo"
+
+            android:textSize="14sp"
             app:drawableStartCompat="@drawable/f7_exclamationmark_circle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/iv_preview" />
-
 
 
         <com.google.android.material.card.MaterialCardView
@@ -91,7 +95,8 @@
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text">
+            app:layout_constraintTop_toBottomOf="@+id/text"
+            tools:ignore="TextSizeCheck">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -122,14 +127,17 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
                     android:drawablePadding="4dp"
+                    android:fontFamily="@font/poppins_regular"
                     android:gravity="center"
-                    android:text=" Make sure to use bright and clear photo"
-                    android:textSize="15sp"
+                    android:text="@string/make_sure_to_use_bright_and_clear_photo"
+
+
+                    android:textSize="14sp"
                     app:drawableStartCompat="@drawable/f7_exclamationmark_circle"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    tools:layout_editor_absoluteY="17dp"
-                    app:layout_constraintTop_toBottomOf="@+id/iv_upload_Front"/>
+                    app:layout_constraintTop_toBottomOf="@+id/iv_upload_Front"
+                    tools:layout_editor_absoluteY="17dp" />
 
                 <ImageButton
                     android:id="@+id/Capture_camera_btn1"
@@ -141,7 +149,7 @@
                     android:src="@drawable/capture_btn"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/text6"
-                    tools:ignore="SpeakableTextPresentCheck" />
+                    tools:ignore="ContentDescription,SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
                 <TextView
                     android:id="@+id/text7"
@@ -149,8 +157,10 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
                     android:layout_marginTop="7dp"
+                    android:fontFamily="@font/poppins_regular"
                     android:gravity="center"
-                    android:text="Capture Camera?"
+                    android:text="@string/capture_camera"
+
                     android:textSize="15sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -167,15 +177,18 @@
                     android:background="@android:color/transparent"
                     android:src="@drawable/btn_galeri"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text6" />
+                    app:layout_constraintTop_toBottomOf="@+id/text6"
+                    tools:ignore="ContentDescription,SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
                 <TextView
                     android:id="@+id/text8"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="4dp"
+                    android:fontFamily="@font/poppins_regular"
                     android:gravity="center"
-                    android:text="Grab gallery?"
+                    android:text="@string/grab_gallery"
+
                     android:textSize="15sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -189,20 +202,23 @@
 
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnUpload_Api"
-            android:layout_width="0dp"
+            android:id="@+id/btn_Next_Image1"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
+            android:layout_marginTop="32dp"
             android:backgroundTint="@color/navy_blue"
             android:minHeight="48dp"
-            android:text="Next Image !"
+
+            android:fontFamily="@font/poppins_regular"
+            android:textSize="15sp"
+
+            android:text="@string/next_image"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/progressBar4" />
-
 
         <ProgressBar
             android:id="@+id/progressBar4"

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragmentInformationScan">
+
+    <fragment
+        android:id="@+id/fragmentInformationScan"
+        android:name="com.dicoding.bangkitcapstone.scan.FragmentInformationScan"
+        android:label="FragmentInformationScan" >
+        <action
+            android:id="@+id/action_fragmentInformationScan_to_fragmentScanskintype4"
+            app:destination="@id/fragmentScanskintype"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentScanskintype"
+        android:name="com.dicoding.bangkitcapstone.scan.FragmentScanskintype"
+        android:label="FragmentScanskintype" >
+        <action
+            android:id="@+id/action_fragmentScanskintype_to_fragmentScanSkinType22"
+            app:destination="@id/fragmentScanSkinType2"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentScanSkinType2"
+        android:name="com.dicoding.bangkitcapstone.scan.FragmentScanSkinType2"
+        android:label="FragmentScanSkinType2" >
+        <action
+            android:id="@+id/action_fragmentScanSkinType2_to_fragmentScanSkinType3"
+            app:destination="@id/fragmentScanSkinType3"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentScanSkinType3"
+        android:name="com.dicoding.bangkitcapstone.scan.FragmentScanSkinType3"
+        android:label="FragmentScanSkinType3" />
+</navigation>
