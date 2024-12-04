@@ -3,6 +3,7 @@ package com.dicoding.bangkitcapstone
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -23,6 +24,7 @@ import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment
 import com.dicoding.bangkitcapstone.ui.main.MainViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -102,6 +104,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
+        // Menghapus cache file ketika aplikasi dibuka
+        deleteCacheFile()
 
         enableEdgeToEdge()
         setupBottomNavigation()
@@ -185,7 +189,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(getString(R.string.grant)) { _, _ ->
                 // Navigate to app settings to enable permissions
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = android.net.Uri.fromParts("package", packageName, null)
+                    data = Uri.fromParts("package", packageName, null)
                 }
                 startActivity(intent)
             }
@@ -195,6 +199,37 @@ class MainActivity : AppCompatActivity() {
             }
             .create()
             .show()
+    }
+
+    private fun deleteCacheFile(uri: Uri? = null) {
+        Log.d("Cache_EVERYTHING", "Deleting cache file: $uri")
+        try {
+            val cacheDir = cacheDir
+            if (uri != null) {
+                // Delete a specific file
+                val file = File(cacheDir, uri.lastPathSegment ?: return)
+                if (file.exists() && file.delete()) {
+                    Log.i("Cache_EVERYTHING", "Deleted image file: ${file.absolutePath}")
+                } else {
+                    Log.w("Cache_EVERYTHING", "File not found or failed to delete: ${file.absolutePath}")
+                }
+            } else {
+                // Delete all image cache files
+                cacheDir.listFiles()?.forEach { file ->
+                    if (file.name.startsWith("image_cache_") && file.name.endsWith(".jpg")) {
+                        if (file.delete()) {
+                            Log.i("Cache_EVERYTHING", "Deleted cache file: ${file.absolutePath}")
+                        } else {
+                            Log.w("Cache_EVERYTHING", "Failed to delete cache file: ${file.absolutePath}")
+                        }
+                    } else {
+                        Log.i("Cache_EVERYTHING", "Skipped non-image cache file: ${file.absolutePath}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Cache_EVERYTHING", "Error deleting cache file: ${e.localizedMessage}")
+        }
     }
 
 

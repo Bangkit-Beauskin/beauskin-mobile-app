@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ScanViewModel @Inject constructor(
-    private val repository: ScanRepository // Tambahkan repository jika perlu untuk API atau database
+    private val repository: ScanRepository // Tambahkan repository
 ) : ViewModel() {
 
     private val _frontImage = MutableLiveData<Uri?>()

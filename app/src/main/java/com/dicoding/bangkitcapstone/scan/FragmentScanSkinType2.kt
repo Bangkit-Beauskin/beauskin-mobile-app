@@ -39,4 +39,9 @@ class FragmentScanSkinType2 : Fragment() {
         }
 
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
