@@ -14,4 +14,37 @@
     <string name="all_skin_types">all</string>
     <string name="no_description">No description available</string>
     <string name="no_content">No content available</string>
+
+    <!-- Permission messages -->
+    <string name="permission_rationale">Please grant access to all required permissions for the camera and gallery to ensure the app works properly.</string>
+    <string name="permission_permanently_denied">Permission is required. Please enable it in settings.</string>
+    <string name="permission_granted">Permission Granted</string>
+    <string name="grant">Grant</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="Desc_scan_your_Skin">Scan your skin type and acne problems</string>
+    <string name="capture">Capture</string>
+    <string name="upload_imagestext">Upload Image</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="scan_your_skin_type">Scan your skin type</string>
+    <string name="skin_type_analysis">Skin Type Analysis</string>
+    <string name="Text_app_todo">This application is designed to help you identify and analyze your skin type through image input. You can take a new photo or choose an image from your photo gallery.</string>
+    <string name="usage_instructions">Usage Instructions</string>
+    <string name="text_desc_information_1">1. Make sure the image you take is clear \n\t and focused on the area of skin you\n \t want to analyze.</string>
+    <string name="text_desc_information_2">2. Follow the provided instructions to\t\t\t \n\t\tensure the uploaded image meets \n\t\tthe requirements.</string>
+    <string name="ready_start_text">Ready to start your skin type analysis? Press \nthe button below to continue!</string>
+    <string name="lets_begin">Lets Begin !</string>
+    <string name="front_face_photo">Front Face Photo</string>
+    <string name="example_front_face_photo">Example Front Face photo</string>
+    <string name="make_sure_to_use_bright_and_clear_photo">Make sure to use bright and clear photo</string>
+    <string name="capture_camera">Capture Camera?</string>
+    <string name="grab_gallery">Grab gallery?</string>
+    <string name="next_image">Next Image !</string>
+    <string name="right_side_view_face_photo">Right Side View Face Photo</string>
+    <string name="example_right_side_face_photo">Example Right Side Face Photo</string>
+    <string name="left_side_view_face_photo">Left Side View Face Photo</string>
+    <string name="example_left_side_face_photo">Example Left Side Face Photo</string>
+    <string name="lest_upload">Lest Upload!</string>
+
 </resources>

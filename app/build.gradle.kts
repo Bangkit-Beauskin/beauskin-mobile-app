@@ -4,6 +4,8 @@ plugins {
     id("org.jetbrains.kotlin.kapt")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
+
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -98,6 +100,13 @@ dependencies {
 
     // Material Design components
     implementation("com.google.android.material:material:1.11.0")
+
+    //Graph Navigasi
+    implementation ("androidx.navigation:navigation-ui-ktx:2.8.4")
+    implementation ("androidx.navigation:navigation-fragment-ktx:2.8.4")
+    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
+
+
 
 }
 
