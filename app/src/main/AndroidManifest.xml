@@ -50,10 +50,6 @@
             android:name=".detail.NewsDetailActivity"
             android:exported="false"/>
         <activity
-            android:name=".detail.VideoDetailActivity"
-            android:exported="false"/>
-
-        <activity
             android:name=".scan.ScanActivity"
             android:exported="false"/>
 

@@ -230,6 +230,28 @@ class MainActivity : AppCompatActivity() {
                 Log.w(tag, "Cache file for right image is invalid, deleted.")
             }
         }
+
+        // Check and delete cache files for scan images
+        scanViewModel.frontImage.value?.let { uri ->
+            if (isFileValid(uri)) {
+                deleteCacheFile(uri)
+                Log.w(tag, "Cache file for front image is invalid, deleted.")
+            }
+        }
+
+        scanViewModel.leftImage.value?.let { uri ->
+            if (isFileValid(uri)) {
+                deleteCacheFile(uri)
+                Log.w(tag, "Cache file for left image is invalid, deleted.")
+            }
+        }
+
+        scanViewModel.rightImage.value?.let { uri ->
+            if (isFileValid(uri)) {
+                deleteCacheFile(uri)
+                Log.w(tag, "Cache file for right image is invalid, deleted.")
+            }
+        }
     }
 
     private fun isFileValid(uri: Uri?): Boolean {
