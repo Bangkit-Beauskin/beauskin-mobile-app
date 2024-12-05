@@ -14,6 +14,7 @@
     <string name="all_skin_types">all</string>
     <string name="no_description">No description available</string>
     <string name="no_content">No content available</string>
+    <string name="untitled">untitled</string>
 
     <!-- Permission messages -->
     <string name="permission_rationale">Please grant access to all required permissions for the camera and gallery to ensure the app works properly.</string>

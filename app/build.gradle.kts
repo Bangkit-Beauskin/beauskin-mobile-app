@@ -74,8 +74,8 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 
-//    // ViewModel
-//   implementation ("androidx.activity:activity-ktx:1.7.2")
+    // ViewModel
+    implementation ("androidx.activity:activity-ktx:1.7.2")
 
     // Security
     implementation ("androidx.security:security-crypto:1.1.0-alpha06")

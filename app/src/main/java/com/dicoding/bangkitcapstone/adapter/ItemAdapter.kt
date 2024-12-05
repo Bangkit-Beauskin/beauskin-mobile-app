@@ -48,21 +48,42 @@ class ItemAdapter(
 
         fun bind(item: Item) {
             binding.apply {
-                tvName.text = item.name
+                // Set item name with null safety
+                tvName.text = item.name.takeIf { it.isNotBlank() }
+                    ?: root.context.getString(R.string.untitled)
 
+                // Handle different item types
                 when (item.type) {
                     "product" -> {
                         loadImage(item.url, false)
+                        playIcon.isVisible = false
                     }
                     "news" -> {
-                        imageView.setImageResource(R.drawable.baseline_article_24)
+                        if (!item.url.isNullOrEmpty()) {
+                            loadImage(item.url, false)
+                        } else {
+                            setDefaultImage(R.drawable.baseline_article_24)
+                        }
                         playIcon.isVisible = false
                     }
                     "video" -> {
-                        loadImage(item.url, true)
+                        if (!item.url.isNullOrEmpty()) {
+                            loadImage(item.url, true)
+                        } else {
+                            setDefaultImage(R.drawable.baseline_movie_24)
+                        }
+                        playIcon.isVisible = true
+                    }
+                    else -> {
+                        setDefaultImage(R.drawable.baseline_image_24)
+                        playIcon.isVisible = false
                     }
                 }
             }
+        }
+
+        private fun setDefaultImage(resourceId: Int) {
+            binding.imageView.setImageResource(resourceId)
         }
 
         private fun loadImage(url: String?, showPlayIcon: Boolean) {
@@ -73,9 +94,9 @@ class ItemAdapter(
                         else -> url
                     }
 
-                    Glide.with(itemView)
+                    Glide.with(itemView.context)
                         .load(imageUrl)
-                        .placeholder(if (showPlayIcon) R.drawable.baseline_movie_24 else R.drawable.baseline_image_24)
+                        .placeholder(getPlaceholderResource(getItem(bindingAdapterPosition).type))
                         .error(R.drawable.baseline_broken_image_24)
                         .centerCrop()
                         .listener(object : RequestListener<Drawable> {
@@ -102,28 +123,48 @@ class ItemAdapter(
                         })
                         .into(imageView)
                 } else {
-                    imageView.setImageResource(
-                        if (showPlayIcon) R.drawable.baseline_movie_24
-                        else R.drawable.baseline_image_24
-                    )
+                    setDefaultImage(getPlaceholderResource(getItem(bindingAdapterPosition).type))
                     playIcon.isVisible = showPlayIcon
                 }
             }
         }
 
+        private fun getPlaceholderResource(type: String): Int {
+            return when (type) {
+                "news" -> R.drawable.baseline_article_24
+                "video" -> R.drawable.baseline_movie_24
+                "product" -> R.drawable.baseline_image_24
+                else -> R.drawable.baseline_image_24
+            }
+        }
+
         private fun getYouTubeThumbnailUrl(videoUrl: String): String {
-            val videoId = videoUrl.substringAfterLast("/").substringBefore("?")
+            val videoId = try {
+                when {
+                    videoUrl.contains("youtu.be/") ->
+                        videoUrl.substringAfter("youtu.be/").substringBefore("?")
+                    videoUrl.contains("youtube.com/watch?v=") ->
+                        videoUrl.substringAfter("v=").substringBefore("&")
+                    else -> videoUrl
+                }
+            } catch (e: Exception) {
+                videoUrl
+            }
             return "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
         }
     }
-}
 
-class ItemDiffCallback : DiffUtil.ItemCallback<Item>() {
-    override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
-        return oldItem.id == newItem.id
+    class ItemDiffCallback : DiffUtil.ItemCallback<Item>() {
+        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return oldItem == newItem
+        }
     }
 
-    override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
-        return oldItem == newItem
+    companion object {
+        private const val TAG = "ItemAdapter"
     }
 }
