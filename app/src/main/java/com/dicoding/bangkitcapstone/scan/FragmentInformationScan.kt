@@ -11,7 +11,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.dicoding.bangkitcapstone.MainActivity
+import com.dicoding.bangkitcapstone.ui.main.MainActivity
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.databinding.FragmentInformationScanBinding
 import java.io.File
@@ -34,6 +34,8 @@ class FragmentInformationScan : Fragment() {
 
         binding.btnBack.setOnClickListener {
             viewModel.frontImage.value?.let { deleteCacheFile(it) }
+            viewModel.rightImage.value?.let { deleteCacheFile(it) }
+            viewModel.leftImage.value?.let { deleteCacheFile(it) }
             val intent = Intent(requireContext(), MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
@@ -56,10 +58,18 @@ class FragmentInformationScan : Fragment() {
     override fun onResume() {
         super.onResume()
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            // Hapus cache sebelum menutup fragment
+
+            Log.d("onResume", "frontImage: ${viewModel.frontImage.value}")
+            Log.d("onResume", "rightImage: ${viewModel.rightImage.value}")
+            Log.d("onResume", "leftImage: ${viewModel.leftImage.value}")
+
             viewModel.frontImage.value?.let { deleteCacheFile(it) }
+            viewModel.rightImage.value?.let { deleteCacheFile(it) }
+            viewModel.leftImage.value?.let { deleteCacheFile(it) }
+
             requireActivity().finish()
         }
+
     }
 
     private fun deleteCacheFile(uri: Uri? = null) {
