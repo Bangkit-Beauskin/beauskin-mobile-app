@@ -29,7 +29,7 @@ class ProductDetailActivity : AppCompatActivity() {
             productName.text = item.name
             skinType.text = getString(
                 R.string.skin_type_format,
-                item.skinType ?: getString(R.string.all_skin_types)
+                item.skin_type ?: getString(R.string.all_skin_types)
             )
             description.text = item.description ?: getString(R.string.no_description)
 

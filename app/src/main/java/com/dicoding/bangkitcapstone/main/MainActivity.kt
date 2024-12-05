@@ -75,6 +75,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         if (!tokenManager.isLoggedIn()) {
             Log.d("MainActivity", "User not logged in, redirecting to login")
