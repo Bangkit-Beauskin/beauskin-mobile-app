@@ -205,27 +205,29 @@
             android:id="@+id/btn_Next_Image1"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="10dp"
+
             android:backgroundTint="@color/navy_blue"
-            android:minHeight="48dp"
-
             android:fontFamily="@font/poppins_regular"
-            android:textSize="15sp"
 
+            android:minHeight="48dp"
             android:text="@string/next_image"
+
             android:textAllCaps="false"
             android:textColor="@color/white"
+            android:textSize="15sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progressBar4" />
+            app:layout_constraintTop_toBottomOf="@+id/tvErrorMessage" />
 
-        <ProgressBar
-            android:id="@+id/progressBar4"
-            style="?android:attr/progressBarStyle"
+        <TextView
+            android:id="@+id/tvErrorMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/poppins_regular"
+            android:textColor="#ff0000"
+            android:text="@string/error_no_image_selected"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

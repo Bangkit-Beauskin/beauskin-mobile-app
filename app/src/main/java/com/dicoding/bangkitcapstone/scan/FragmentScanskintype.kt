@@ -19,6 +19,7 @@ import com.dicoding.bangkitcapstone.databinding.FragmentScanskintypeBinding
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
+// for front image scan
 @AndroidEntryPoint
 class FragmentScanskintype : Fragment() {
 
@@ -26,12 +27,12 @@ class FragmentScanskintype : Fragment() {
 
     private var _binding: FragmentScanskintypeBinding? = null
     private val binding get() = _binding!!
+
     private var currentImageUri: Uri? = null
 
     // Launcher to pick an image from the gallery (Android 13 and above)
     private val launcherGallery =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-
             handleImageSelection(uri) // handle image
         }
 
@@ -42,14 +43,12 @@ class FragmentScanskintype : Fragment() {
             handleImageSelection(uri) // handle image
         }
 
-
     // Launcher for taking a picture from the camera
     private val launcherCamera =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 currentImageUri?.let { uri ->
                     // Periksa apakah file lama masih valid sebelum menghapusnya
-
                     viewModel.frontImage.value?.let { oldUri ->
                         if (isFileValid(oldUri)) {
                             deleteCacheFile(oldUri) // Hapus file cache lama hanya jika valid
@@ -61,13 +60,12 @@ class FragmentScanskintype : Fragment() {
 
                     Log.d("Image", "Image file created successfully: URI: $uri")
                     viewModel.setFrontImage(uri)
+                    binding.tvErrorMessage.visibility = View.GONE
                     displayImage(uri)
                 }
             } else {
                 currentImageUri?.let { deleteCacheFile(it) }
                 currentImageUri = null
-
-                // showToast(getString(R.string.cancel))
             }
         }
 
@@ -131,11 +129,23 @@ class FragmentScanskintype : Fragment() {
         }
 
         binding.btnNextImage1.setOnClickListener {
-            Log.d(
-                "FragmentScanskintype",
-                "Navigating to fragmentScanSkintType2 with Uri: ${viewModel.frontImage.value}"
-            )
-            findNavController().navigate(R.id.action_fragmentScanskintype_to_fragmentScanSkinType22)
+
+            val frontImageUri = viewModel.frontImage.value
+
+            if (frontImageUri == null || !isFileValid(frontImageUri)) {
+
+                binding.tvErrorMessage.visibility = View.VISIBLE  // Tampilkan pesan error
+                binding.tvErrorMessage.text =
+                    getString(R.string.error_no_image_selected)  // Pesan error
+            } else {
+                binding.tvErrorMessage.visibility = View.GONE
+
+                Log.d(
+                    "FragmentScanskintype",
+                    "Navigating to fragmentScanSkinType2 with Uri: $frontImageUri"
+                )
+                findNavController().navigate(R.id.action_fragmentScanskintype_to_fragmentScanSkinType22)
+            }
         }
 
         binding.CaptureCameraBtn1.setOnClickListener {
@@ -183,7 +193,7 @@ class FragmentScanskintype : Fragment() {
     private fun isFileValid(uri: Uri?): Boolean {
         if (uri == null) return false
         val file = File(requireContext().cacheDir, uri.lastPathSegment ?: return false)
-        return file.exists()
+        return file.exists() && file.length() > 0
     }
 
     private fun handleImageSelection(uri: Uri?) {
@@ -203,15 +213,16 @@ class FragmentScanskintype : Fragment() {
                     createCacheUri(uri) ?: uri
                 viewModel.setFrontImage(cacheUri)
 
+                binding.tvErrorMessage.visibility = View.GONE
                 //display image
                 displayImage(cacheUri)
                 Log.d(tag, "Image selected and cached: $cacheUri")
             } catch (e: Exception) {
                 Log.e(tag, "Failed to handle selected image: ${e.localizedMessage}")
-                // showToast("Failed to process selected image")
+
             }
         } else {
-            //   showToast(getString(R.string.no_image_selected))
+
             Log.w(tag, "No image selected")
         }
     }
@@ -249,15 +260,49 @@ class FragmentScanskintype : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Periksa jika gambar cache masih ada
+
+        // Step 1: Check if it's the first load or error is already handled
+        if (viewModel.isFirstLoad() && !viewModel.isErrorHandled()) {
+            Log.d("MissingCache", "First load detected. Only showing error text.")
+
+            return
+        }
+
+        // Step 2: Handle the case where images are missing or invalid due to cache deletion
         viewModel.frontImage.value?.let { uri ->
             if (!isFileValid(uri)) {
-                // Jika file tidak valid (sudah dihapus atau hilang), reset tampilan gambar
-                Log.w("FragmentScanskintype", "Cached image not found, resetting UI.")
+                Log.d("MissingCache", "Images are missing or invalid due to cache deletion.")
+                if (!viewModel.isErrorHandled()) {
+                    showErrorDialog()  // Show the error dialog
+                    viewModel.setErrorHandled(true)  // Ensure error dialog is only shown once
+                }
+                // Reset UI after showing error
                 binding.ivUploadFront.setImageResource(R.drawable.baseline_image_24)
+                binding.tvErrorMessage.visibility = View.VISIBLE
+                binding.tvErrorMessage.text = getString(R.string.error_no_image_selected)
+                return
             }
         }
+
+        // Step 3: If images are valid, hide the error message and proceed
+        Log.d("MissingCache", "Images are valid. Proceeding with the next steps.")
+        binding.tvErrorMessage.visibility = View.GONE  // Hide the error message if everything is valid
     }
 
+
+    private fun showErrorDialog() {
+        val dialog = android.app.AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.error_title))
+            .setMessage(getString(R.string.error_message))
+            .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                dialog.dismiss()
+
+                val navController = findNavController()
+                navController.navigate(R.id.action_fragmentScanskintype_to_fragmentInformationScan
+                )
+            }
+            .create()
+        dialog.show()
+    }
 
 }

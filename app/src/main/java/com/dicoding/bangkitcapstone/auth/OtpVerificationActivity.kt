@@ -9,7 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.dicoding.bangkitcapstone.MainActivity
+import com.dicoding.bangkitcapstone.ui.main.MainActivity
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.data.model.OtpResponse

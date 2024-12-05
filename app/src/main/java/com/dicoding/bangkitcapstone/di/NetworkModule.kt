@@ -2,6 +2,7 @@ package com.dicoding.bangkitcapstone.di
 
 import android.content.Context
 import com.dicoding.bangkitcapstone.data.api.ApiService
+import com.dicoding.bangkitcapstone.data.api.ScanApiService
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import dagger.Module
 import dagger.Provides
@@ -13,6 +14,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -56,5 +58,25 @@ object NetworkModule {
         @ApplicationContext context: Context
     ): TokenManager {
         return TokenManager(context)
+    }
+
+    // Provide Retrofit for Image Scan API
+    @Provides
+    @Singleton
+    @Named("scan")
+    fun provideScanRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(com.dicoding.bangkitcapstone.BuildConfig.BASE_URL_SCAN)  // Use the scan endpoint from BuildConfig
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+    }
+
+    // Provide ScanApiService
+    @Provides
+    @Singleton
+    @Named("scan")
+    fun provideScanApiService(@Named("scan") retrofit: Retrofit): ScanApiService {
+        return retrofit.create(ScanApiService::class.java)
     }
 }

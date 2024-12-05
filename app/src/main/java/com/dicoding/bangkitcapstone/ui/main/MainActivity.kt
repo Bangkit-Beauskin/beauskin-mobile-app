@@ -1,4 +1,4 @@
-package com.dicoding.bangkitcapstone
+package com.dicoding.bangkitcapstone.ui.main
 
 import android.Manifest
 import android.content.Context
@@ -16,13 +16,13 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.auth.LoginActivity
 import com.dicoding.bangkitcapstone.chat.ChatActivity
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.profile.ProfileActivity
 import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment
 import com.dicoding.bangkitcapstone.scan.ScanViewModel
-import com.dicoding.bangkitcapstone.ui.main.MainViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
