@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         // Check auth status
         if (!isAuthenticated()) {
@@ -98,11 +99,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupDarkMode()
-        setupViews()
         setupRecyclerView()
+        setupViews()
         observeViewModel()
         setupBottomNavigation()
-        setupWindowInsets()
         deleteCacheFile()
 
         // Initial data fetch
@@ -137,24 +137,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupViews() {
-        binding.apply {
-            swipeRefresh.setOnRefreshListener {
-                viewModel.fetchItems()
-            }
-
-            chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
-                val skinType = when (checkedIds.firstOrNull()) {
-                    R.id.chipDry -> "dry"
-                    R.id.chipOily -> "oily"
-                    R.id.chipNormal -> "normal"
-                    else -> null
-                }
-                viewModel.setSkinType(skinType)
-            }
-        }
-    }
-
     private fun setupRecyclerView() {
         adapter = ItemAdapter { item ->
             when (item.type) {
@@ -165,8 +147,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.recyclerView.apply {
-            layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+            layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL).apply {
+                gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS
+            }
             adapter = this@MainActivity.adapter
+            setHasFixedSize(true)
+
+            // Add item decoration for spacing
             addItemDecoration(object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
                     outRect: Rect,
@@ -178,12 +165,57 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+
+        // Improve scroll performance
+        binding.recyclerView.itemAnimator = null
+    }
+
+    private fun setupViews() {
+        binding.apply {
+            ViewCompat.setOnApplyWindowInsetsListener(root) { view, windowInsets ->
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.setPadding(insets.left, 0, insets.right, insets.bottom)
+                windowInsets
+            }
+
+            swipeRefresh.setOnRefreshListener {
+                viewModel.fetchItems()
+            }
+
+            chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+                val checkedChipId = checkedIds.firstOrNull()
+                when (checkedChipId) {
+                    R.id.chipAll -> {
+                        viewModel.clearSkinTypeFilter()
+                    }
+                    R.id.chipDry -> {
+                        viewModel.setSkinType("dry")
+                    }
+                    R.id.chipOily -> {
+                        viewModel.setSkinType("oily")
+                    }
+                    R.id.chipNormal -> {
+                        viewModel.setSkinType("normal")
+                    }
+                    null -> {
+                        // If no chip is selected, show all items
+                        viewModel.clearSkinTypeFilter()
+                    }
+                }
+            }
+
+            // Ensure chipAll is checked by default
+            chipGroup.check(R.id.chipAll)
+        }
     }
 
     private fun observeViewModel() {
         lifecycleScope.launch {
             viewModel.filteredItems.collect { items ->
-                adapter.submitList(items)
+                adapter.submitList(items) {
+                    // Scroll to top when submitting a new list
+                    binding.recyclerView.scrollToPosition(0)
+                }
             }
         }
 
@@ -350,14 +382,6 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Log.e("Cache_EVERYTHING", "Error deleting cache file: ${e.localizedMessage}")
-        }
-    }
-
-    private fun setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
         }
     }
 

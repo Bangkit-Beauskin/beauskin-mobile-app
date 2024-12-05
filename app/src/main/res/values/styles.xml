@@ -3,4 +3,44 @@
     <style name="CircularImageView">
         <item name="cornerSize">50%</item>
     </style>
+
+    <!-- Base ChipStyle -->
+    <style name="ChipStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">14sp</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipBackgroundColor">@color/white</item>
+        <item name="android:stateListAnimator">@animator/chip_state_list_anim</item>
+        <item name="checkedIconEnabled">false</item>
+        <item name="chipStrokeColor">@color/light_gray</item>
+        <!-- Increase padding for better touch target -->
+        <item name="chipMinHeight">40dp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <!-- Style for the "All" chip -->
+    <style name="ChipStyle.All">
+        <item name="chipStrokeColor">@android:color/transparent</item>
+        <item name="chipBackgroundColor">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="ChipStyle.Oily">
+        <item name="chipBackgroundColor">@color/light_blue</item>
+        <item name="chipStrokeColor">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="ChipStyle.Dry">
+        <item name="chipBackgroundColor">@color/light_yellow</item>
+        <item name="chipStrokeColor">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="ChipStyle.Normal">
+        <item name="chipBackgroundColor">@color/light_green</item>
+        <item name="chipStrokeColor">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
 </resources>

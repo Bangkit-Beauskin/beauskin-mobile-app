@@ -31,9 +31,15 @@ class MainViewModel @Inject constructor(
     val selectedItem: StateFlow<Item?> = _selectedItem
 
     val filteredItems = combine(_items, _selectedSkinType) { items, skinType ->
-        when {
-            skinType == null -> items
-            else -> items.filter { it.skinType == skinType || it.skinType == null }
+        when (skinType) {
+            null -> items  // Show all items when no skin type is selected
+            else -> items.filter { item ->
+                when (item.type) {
+                    "product" -> item.skin_type?.lowercase() == skinType.lowercase()
+                    "news", "video" -> true  // Always show news and videos regardless of skin type
+                    else -> false
+                }
+            }
         }
     }.stateIn(
         scope = viewModelScope,
@@ -52,14 +58,7 @@ class MainViewModel @Inject constructor(
             try {
                 repository.getProducts().fold(
                     onSuccess = { response ->
-                        _items.value = response.data.map { item ->
-                            // Transform YouTube URLs to proper format if needed
-                            if (item.type == "video" && item.url?.contains("youtu.be") == true) {
-                                item.copy(url = item.url)
-                            } else {
-                                item
-                            }
-                        }
+                        _items.value = response.data
                     },
                     onFailure = { exception ->
                         _error.value = exception.message ?: "Unknown error occurred"
@@ -74,16 +73,16 @@ class MainViewModel @Inject constructor(
     }
 
     fun setSkinType(type: String?) {
-        _selectedSkinType.value = type
-    }
-
-    fun setSelectedItem(item: Item) {
-        _selectedItem.value = item
-        if (item.type == "product") {
-            fetchItemDetails(item.id)
+        viewModelScope.launch {
+            _selectedSkinType.value = type?.lowercase()
         }
     }
 
+    fun clearSkinTypeFilter() {
+        viewModelScope.launch {
+            _selectedSkinType.value = null
+        }
+    }
     private fun fetchItemDetails(itemId: String) {
         viewModelScope.launch {
             try {
