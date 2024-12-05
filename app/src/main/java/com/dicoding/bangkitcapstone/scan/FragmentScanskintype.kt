@@ -48,12 +48,18 @@ class FragmentScanskintype : Fragment() {
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 currentImageUri?.let { uri ->
+                    // Periksa apakah file lama masih valid sebelum menghapusnya
 
-                    viewModel.frontImage.value?.let { oldUri -> deleteCacheFile(oldUri) }
-                    Log.d(
-                        "Image",
-                        "Image file created successfully: URI: $uri"
-                    )
+                    viewModel.frontImage.value?.let { oldUri ->
+                        if (isFileValid(oldUri)) {
+                            deleteCacheFile(oldUri) // Hapus file cache lama hanya jika valid
+                            Log.d("Image", "Old image file deleted: $oldUri")
+                        } else {
+                            Log.w("Image", "Old image file not found, skipping deletion")
+                        }
+                    }
+
+                    Log.d("Image", "Image file created successfully: URI: $uri")
                     viewModel.setFrontImage(uri)
                     displayImage(uri)
                 }
@@ -174,14 +180,23 @@ class FragmentScanskintype : Fragment() {
         }
     }
 
+    private fun isFileValid(uri: Uri?): Boolean {
+        if (uri == null) return false
+        val file = File(requireContext().cacheDir, uri.lastPathSegment ?: return false)
+        return file.exists()
+    }
 
     private fun handleImageSelection(uri: Uri?) {
         if (uri != null) {
             try {
-                // Ambil URI lama dan hapus file cache-nya
+                // Periksa apakah URI lama masih valid sebelum menghapus cache-nya
                 viewModel.frontImage.value?.let { oldUri ->
-                    deleteCacheFile(oldUri) // Menghapus file cache lama
-                    Log.d("FragmentScanskintype", "Old image file deleted: $oldUri")
+                    if (isFileValid(oldUri)) {
+                        deleteCacheFile(oldUri) // Menghapus file cache lama hanya jika masih ada
+                        Log.d("FragmentScanskintype", "Old image file deleted: $oldUri")
+                    } else {
+                        Log.w("FragmentScanskintype", "Old image file not found, skipping deletion")
+                    }
                 }
 
                 val cacheUri =
@@ -231,5 +246,18 @@ class FragmentScanskintype : Fragment() {
             Log.e("Cache", "Error deleting cache file: ${e.localizedMessage}")
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Periksa jika gambar cache masih ada
+        viewModel.frontImage.value?.let { uri ->
+            if (!isFileValid(uri)) {
+                // Jika file tidak valid (sudah dihapus atau hilang), reset tampilan gambar
+                Log.w("FragmentScanskintype", "Cached image not found, resetting UI.")
+                binding.ivUploadFront.setImageResource(R.drawable.baseline_image_24)
+            }
+        }
+    }
+
 
 }

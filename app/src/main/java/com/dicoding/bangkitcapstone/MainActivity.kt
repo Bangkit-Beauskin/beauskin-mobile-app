@@ -21,6 +21,7 @@ import com.dicoding.bangkitcapstone.chat.ChatActivity
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.profile.ProfileActivity
 import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment
+import com.dicoding.bangkitcapstone.scan.ScanViewModel
 import com.dicoding.bangkitcapstone.ui.main.MainViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,10 +35,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var tokenManager: TokenManager
 
     private lateinit var mainViewModel: MainViewModel
-
+    private lateinit var scanViewModel: ScanViewModel
     private var isDialogShown = false
 
-    // Logger Tag
+    // Logger Tag ScanViewModel
     private val tag = "MainActivity"
 
     // Save the status of the dialog when configuration changes occur (e.g., rotation)
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        scanViewModel = ViewModelProvider(this)[ScanViewModel::class.java]
 
         // Check if the permission dialog was shown previously (handle screen rotation)
         if (savedInstanceState != null) {
@@ -199,6 +201,41 @@ class MainActivity : AppCompatActivity() {
             }
             .create()
             .show()
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+
+        // Memeriksa dan menghapus cache file untuk frontImage
+        scanViewModel.frontImage.value?.let { uri ->
+            if (isFileValid(uri)) {
+                deleteCacheFile(uri)
+                Log.w(tag, "Cache file for front image is invalid, deleted.")
+            }
+        }
+
+        // Memeriksa dan menghapus cache file untuk leftImage
+        scanViewModel.leftImage.value?.let { uri ->
+            if (isFileValid(uri)) {
+                deleteCacheFile(uri)
+                Log.w(tag, "Cache file for left image is invalid, deleted.")
+            }
+        }
+
+        // Memeriksa dan menghapus cache file untuk rightImage
+        scanViewModel.rightImage.value?.let { uri ->
+            if (isFileValid(uri)) {
+                deleteCacheFile(uri)
+                Log.w(tag, "Cache file for right image is invalid, deleted.")
+            }
+        }
+    }
+
+    private fun isFileValid(uri: Uri?): Boolean {
+        if (uri == null) return false
+        val file = File(cacheDir, uri.lastPathSegment ?: return false)
+        return file.exists()
     }
 
     private fun deleteCacheFile(uri: Uri? = null) {
