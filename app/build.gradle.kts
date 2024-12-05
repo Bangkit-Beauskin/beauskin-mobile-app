@@ -20,7 +20,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BASE_URL", "\"https://copycatcapstone.et.r.appspot.com/\"")
-        buildConfigField("String", "BASE_URL_SCAN", "\"https://notes-api-1067826268927.asia-southeast2.run.app/\"")
+        buildConfigField("String", "BASE_URL_SCAN", "\"https://36cwrqb8-8001.asse.devtunnels.ms/\"")
     }
 
     buildTypes {

@@ -26,7 +26,8 @@ class ScanRepository @Inject constructor(
             val inputStream = getInputStreamFromUri(uri)
             inputStream?.let {
                 val requestBody = it.readBytes().toRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("file", "front_image.jpg", requestBody)
+                Log.d("ScanRepository", "front_image requestBody created")
+                MultipartBody.Part.createFormData("front_image", "front_image.jpg", requestBody)
             }
         }
 
@@ -34,7 +35,8 @@ class ScanRepository @Inject constructor(
             val inputStream = getInputStreamFromUri(uri)
             inputStream?.let {
                 val requestBody = it.readBytes().toRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("file", "left_image.jpg", requestBody)
+                Log.d("ScanRepository", "left_image requestBody created")
+                MultipartBody.Part.createFormData("left_image", "left_image.jpg", requestBody)
             }
         }
 
@@ -42,15 +44,23 @@ class ScanRepository @Inject constructor(
             val inputStream = getInputStreamFromUri(uri)
             inputStream?.let {
                 val requestBody = it.readBytes().toRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("file", "right_image.jpg", requestBody)
+                Log.d("ScanRepository", "right_image requestBody created")
+                MultipartBody.Part.createFormData("right_image", "right_image.jpg", requestBody)
             }
         }
 
 
+        // Log and check that all images are valid
+        Log.d(
+            "ScanRepository",
+            "frontImagePart: $frontImagePart, leftImagePart: $leftImagePart, rightImagePart: $rightImagePart"
+        )
+
         // Call API if all images are valid
         if (frontImagePart != null && leftImagePart != null && rightImagePart != null) {
             try {
-                scanApiService.analyzeSkin(frontImagePart, leftImagePart, rightImagePart)
+                val response = scanApiService.analyzeSkin(frontImagePart, leftImagePart, rightImagePart)
+                Log.d("ScanRepository", "API Response: $response")
             } catch (e: Exception) {
                 Log.e("ScanRepository", "Error during image upload: ${e.localizedMessage}")
                 throw e
