@@ -54,5 +54,33 @@
     <string name="error_message">An error occurred while processing the images. Please try again.</string>
     <string name="ok">OK</string>
 
+    <string name="lets_upload">Lets Upload</string>
+    <string name="uploading">Uploading…</string>
+
+
+    <!-- Analysis Result -->
+    <string name="analysis_result">Analysis Result</string>
+
+    <!-- Annotated Images Section -->
+    <string name="front_annotated_image">Front Annotated Image</string>
+    <string name="left_annotated_image">Left Annotated Image</string>
+    <string name="right_annotated_image">Right Annotated Image</string>
+
+    <!-- Predictions Section -->
+    <string name="front_condition">Front Skin Condition</string>
+    <string name="front_skin_type">Front Skin Type</string>
+    <string name="front_acne_types">Detected Acne Types (Front)</string>
+
+    <string name="left_condition">Left Skin Condition</string>
+    <string name="left_skin_type">Left Skin Type</string>
+    <string name="left_acne_types">Detected Acne Types (Left)</string>
+
+    <string name="right_condition">Right Skin Condition</string>
+    <string name="right_skin_type">Right Skin Type</string>
+    <string name="right_acne_types">Detected Acne Types (Right)</string>
+
+    <!-- Action Button -->
+    <string name="get_recommendation">Get Recommendation</string>
+
 
 </resources>

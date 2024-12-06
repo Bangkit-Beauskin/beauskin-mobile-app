@@ -53,5 +53,14 @@
             app:destination="@id/fragmentInformationScan"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out" />
+        <action
+            android:id="@+id/action_fragmentScanSkinType3_to_fragmentResultImage"
+            app:destination="@id/fragmentResultImage"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
     </fragment>
+    <fragment
+        android:id="@+id/fragmentResultImage"
+        android:name="com.dicoding.bangkitcapstone.scan.FragmentResultImage"
+        android:label="FragmentResultImage" />
 </navigation>
