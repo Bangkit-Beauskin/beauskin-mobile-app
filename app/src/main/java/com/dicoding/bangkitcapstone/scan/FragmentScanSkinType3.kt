@@ -244,35 +244,55 @@ class FragmentScanSkinType3 : Fragment() {
     }
 
     private fun observeUploadimages() {
-        binding.progressBar4.visibility = View.VISIBLE // Tampilkan progress bar
+        binding.progressBar4.visibility = View.VISIBLE
         viewModel.uploadStatus.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Result.Loading -> {
-                    // Tampilkan progress bar atau indikator loading
                     binding.progressBar4.visibility = View.VISIBLE
                     binding.btnUploadApi.isEnabled = false
+                    binding.btnBack.isEnabled = false
+                    binding.CaptureCameraBtn3.isEnabled = false
+                    binding.GrabGallerieBtn3.isEnabled = false
+
+                    binding.btnUploadApi.text = getString(R.string.uploading)
                     binding.tvErrorMessage.visibility = View.GONE
                 }
                 is Result.Success -> {
-                    // Sukses upload, tampilkan pesan sukses
-                    binding.btnUploadApi.isEnabled = true
                     binding.progressBar4.visibility = View.GONE
+//                    binding.btnUploadApi.isEnabled = true
+//                    binding.btnBack.isEnabled = true
+                    binding.btnUploadApi.text = getString(R.string.lets_upload) // Kembalikan teks tombol
                     binding.tvErrorMessage.visibility = View.GONE
                     Toast.makeText(context, result.data, Toast.LENGTH_SHORT).show()
+
+                    Log.d("UploadDialog", "Upload successful: ${result.data}")
+
+                    val bundle = Bundle().apply {
+                        putString("responseScan", result.data)
+
+                    }
+
+                    // Menavigasi ke FragmentResultImage dan mengirimkan Bundle
+                    findNavController().navigate(R.id.action_fragmentScanSkinType3_to_fragmentResultImage, bundle)
                 }
                 is Result.Error -> {
-                    // Gagal upload, tampilkan pesan error
                     binding.progressBar4.visibility = View.GONE
+                    binding.btnUploadApi.isEnabled = true
+                    binding.btnBack.isEnabled = true
+                    binding.CaptureCameraBtn3.isEnabled = true
+                    binding.GrabGallerieBtn3.isEnabled = true
+
+                    binding.btnUploadApi.text = getString(R.string.lets_upload) // Kembalikan teks tombol
                     binding.tvErrorMessage.visibility = View.VISIBLE
-                    Log.d("UploadDialog", "Error during upload: ${result.exception.localizedMessage}")
                     binding.tvErrorMessage.text = result.exception.localizedMessage
+                    Log.d("UploadDialog", "Error during upload: ${result.exception.localizedMessage}")
                 }
             }
         }
-
     }
 
-        private fun handleMissingCache() {
+
+    private fun handleMissingCache() {
             val frontImageUri = viewModel.frontImage.value
             val rightImageUri = viewModel.rightImage.value
             val leftImageUri = viewModel.leftImage.value
