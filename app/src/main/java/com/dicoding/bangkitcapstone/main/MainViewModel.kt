@@ -1,4 +1,4 @@
-package com.dicoding.bangkitcapstone.ui.main
+package com.dicoding.bangkitcapstone.main
 
 import androidx.lifecycle.ViewModel
 import com.dicoding.bangkitcapstone.utils.PermissionUtils

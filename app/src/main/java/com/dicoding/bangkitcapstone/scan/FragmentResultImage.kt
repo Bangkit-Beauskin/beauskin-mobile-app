@@ -131,6 +131,14 @@ class FragmentResultImage : Fragment() {
             .into(imageView)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.btnBack.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
