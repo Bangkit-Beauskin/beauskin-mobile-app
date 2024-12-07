@@ -245,8 +245,7 @@ class FragmentScanSkinType3 : Fragment() {
                 viewModel.uploadImages()
                 observeUploadimages()
 
-                // observedataTest()
-
+              // observedataTest()
             }
             .setNegativeButton(getString(R.string.no)) { dialog, _ ->
                 Log.d("UploadDialog", "User canceled upload, closing dialog.")
@@ -273,8 +272,6 @@ class FragmentScanSkinType3 : Fragment() {
 
                 is Result.Success -> {
                     binding.progressBar4.visibility = View.GONE
-//                    binding.btnUploadApi.isEnabled = true
-//                    binding.btnBack.isEnabled = true
                     binding.btnUploadApi.text =
                         getString(R.string.lets_upload) // Kembalikan teks tombol
                     binding.tvErrorMessage.visibility = View.GONE
@@ -416,9 +413,7 @@ class FragmentScanSkinType3 : Fragment() {
             .setMessage(getString(R.string.error_message))  // Custom error message
             .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
-                // After dismissing the dialog, navigate to FragmentInformationScan
-                val navController = findNavController()
-                navController.navigate(R.id.action_fragmentScanSkinType3_to_fragmentInformationScan)
+
             }
             .create()
 
