@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import com.dicoding.bangkitcapstone.data.api.ScanApiService
+import com.dicoding.bangkitcapstone.data.model.ScanResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -25,7 +26,7 @@ class ScanRepository @Inject constructor(
     private val scanApiService = retrofit.create(ScanApiService::class.java)
     private val mAXFILESIZE = 8 * 1024 * 1024 // 8 MB in bytes
 
-    suspend fun uploadImages(frontImageUri: Uri?, leftImageUri: Uri?, rightImageUri: Uri?) {
+    suspend fun uploadImages(frontImageUri: Uri?, leftImageUri: Uri?, rightImageUri: Uri?): ScanResponse?{
         val frontImagePart = frontImageUri?.let { processImage(it, "front_image") }
         val leftImagePart = leftImageUri?.let { processImage(it, "left_image") }
         val rightImagePart = rightImageUri?.let { processImage(it, "right_image") }
@@ -42,7 +43,7 @@ class ScanRepository @Inject constructor(
                 val response =
                     scanApiService.analyzeSkin(frontImagePart, leftImagePart, rightImagePart)
                 Log.d("ScanRepository", "API Response: $response")
-
+                return response  // Return the response from the API
 
             } catch (e: Exception) {
                 Log.e("ScanRepository", "Error during image upload: ${e.localizedMessage}")
@@ -51,6 +52,7 @@ class ScanRepository @Inject constructor(
         } else {
             Log.e("ScanRepository", "One or more images are invalid or missing.")
         }
+        return null  // Return null if images are invalid
     }
 
     // Fungsi untuk memproses gambar

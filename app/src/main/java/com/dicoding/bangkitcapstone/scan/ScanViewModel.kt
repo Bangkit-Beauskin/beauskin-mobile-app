@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dicoding.bangkitcapstone.data.Result
+import com.dicoding.bangkitcapstone.data.model.ScanResponse
 import com.dicoding.bangkitcapstone.data.repository.ScanRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -32,8 +33,6 @@ class ScanViewModel @Inject constructor(
     private val _rightImage = MutableLiveData<Uri?>()
     val rightImage: LiveData<Uri?> get() = _rightImage
 
-    private val _uploadStatus = MutableLiveData<Result<String>>()
-    val uploadStatus: LiveData<Result<String>> get() = _uploadStatus
 
     fun setFrontImage(uri: Uri?) {
         _frontImage.value = uri
@@ -64,23 +63,42 @@ class ScanViewModel @Inject constructor(
         return isErrorHandled
     }
 
+    private val _scanResult = MutableLiveData<ScanResponse?>()
+    val scanResult: LiveData<ScanResponse?> get() = _scanResult
+
+    private val _uploadStatus = MutableLiveData<Result<String>>()
+    val uploadStatus: LiveData<Result<String>> get() = _uploadStatus
 
     fun uploadImages() {
-        // Ambil URI gambar dari LiveData
+
         val frontImageUri = _frontImage.value
         val leftImageUri = _leftImage.value
         val rightImageUri = _rightImage.value
 
-        // Lakukan upload dengan repository
-        viewModelScope.launch {
-            _uploadStatus.value = Result.loading()  // Tampilkan loading sebelum upload
-            try {
-                // Kirim gambar ke repository
-                repository.uploadImages(frontImageUri, leftImageUri, rightImageUri)
-                _uploadStatus.value = Result.success("Upload successful")  // Status sukses
-            } catch (e: Exception) {
-                _uploadStatus.value = Result.Error(e)  // Status gagal jika terjadi error
+        // Validasi gambar terlebih dahulu
+        if (frontImageUri != null && leftImageUri != null && rightImageUri != null) {
+            viewModelScope.launch {
+                _uploadStatus.value = Result.loading()
+                try {
+                    // Kirim gambar ke repository dan ambil responsenya
+                    val response =
+                        repository.uploadImages(frontImageUri, leftImageUri, rightImageUri)
+
+                    // Jika responsenya tidak null dan statusnya "success"
+                    if (response != null && response.status == "success") {
+                        _uploadStatus.value =
+                            Result.Success("Upload successful: ${response.status}")  // Status sukses
+                        _scanResult.value = response
+                    } else {
+                        _uploadStatus.value = Result.Error(Exception("Failed to upload images."))
+                    }
+                } catch (e: Exception) {
+                    _uploadStatus.value = Result.Error(e)
+                }
             }
+        } else {
+            _uploadStatus.value =
+                Result.Error(Exception("One or more images are missing or invalid"))
         }
     }
 
