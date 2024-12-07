@@ -267,13 +267,8 @@ class FragmentScanSkinType3 : Fragment() {
 
                     Log.d("UploadDialog", "Upload successful: ${result.data}")
 
-                    val bundle = Bundle().apply {
-                        putString("responseScan", result.data)
-
-                    }
-
-                    // Menavigasi ke FragmentResultImage dan mengirimkan Bundle
-                    findNavController().navigate(R.id.action_fragmentScanSkinType3_to_fragmentResultImage, bundle)
+                    // Observe scan result after successful upload
+                   observeDataImage() // Start observing scanResult after upload
                 }
                 is Result.Error -> {
                     binding.progressBar4.visibility = View.GONE
@@ -291,6 +286,20 @@ class FragmentScanSkinType3 : Fragment() {
         }
     }
 
+    private fun observeDataImage() {
+        viewModel.scanResult.observe(viewLifecycleOwner) { scanResponse ->
+            scanResponse?.let {
+                Log.d("UploadDialog", "Scan result: $it")
+
+                // Navigasi dengan SafeArgs
+                val bundle = Bundle().apply {
+                    putParcelable("responseScan", it) // Data yang ingin dikirimkan
+                }
+                findNavController().navigate(R.id.action_fragmentScanSkinType3_to_fragmentResultImage, bundle)
+
+            }
+        }
+    }
 
     private fun handleMissingCache() {
             val frontImageUri = viewModel.frontImage.value
