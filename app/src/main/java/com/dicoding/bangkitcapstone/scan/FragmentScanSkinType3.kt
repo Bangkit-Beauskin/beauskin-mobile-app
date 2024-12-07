@@ -17,6 +17,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.data.Result
+import com.dicoding.bangkitcapstone.data.model.AnnotatedImages
+import com.dicoding.bangkitcapstone.data.model.OriginalImages
+import com.dicoding.bangkitcapstone.data.model.Predictions
+import com.dicoding.bangkitcapstone.data.model.ScanResponse
+import com.dicoding.bangkitcapstone.data.model.SkinAnalysis
 import com.dicoding.bangkitcapstone.databinding.FragmentScanSkinType3Binding
 import com.dicoding.bangkitcapstone.utils.ImageHandler
 import com.dicoding.bangkitcapstone.utils.ImageHandler.deleteCacheFile
@@ -174,7 +179,10 @@ class FragmentScanSkinType3 : Fragment() {
                         ) // Menghapus file cache lama hanya jika masih ada
                         Log.d("FragmentScanskintype2", "Old image file deleted: $oldUri")
                     } else {
-                        Log.w("FragmentScanskintype2", "Old image file not found, skipping deletion")
+                        Log.w(
+                            "FragmentScanskintype2",
+                            "Old image file not found, skipping deletion"
+                        )
                     }
                 }
 
@@ -189,7 +197,8 @@ class FragmentScanSkinType3 : Fragment() {
             } catch (e: Exception) {
                 Log.e(
                     "FragmentScanskintype2",
-                    "Failed to handle selected image: ${e.localizedMessage}")
+                    "Failed to handle selected image: ${e.localizedMessage}"
+                )
             }
         } else {
             Log.w("FragmentScanskintype2", "No image selected")
@@ -219,7 +228,8 @@ class FragmentScanSkinType3 : Fragment() {
         Log.d("ImageValidation", "leftImageUri: $leftImageUri")
         Log.d("ImageValidation", "rightImageUri: $rightImageUri")
 
-        val isValid = isFileValid(frontImageUri) && isFileValid(leftImageUri) && isFileValid(rightImageUri)
+        val isValid =
+            isFileValid(frontImageUri) && isFileValid(leftImageUri) && isFileValid(rightImageUri)
 
         Log.d("ImageValidation", "Are images valid? $isValid")
         return isValid
@@ -234,6 +244,9 @@ class FragmentScanSkinType3 : Fragment() {
                 Log.d("UploadDialog", "User confirmed upload, starting image upload.")
                 viewModel.uploadImages()
                 observeUploadimages()
+
+                // observedataTest()
+
             }
             .setNegativeButton(getString(R.string.no)) { dialog, _ ->
                 Log.d("UploadDialog", "User canceled upload, closing dialog.")
@@ -257,19 +270,22 @@ class FragmentScanSkinType3 : Fragment() {
                     binding.btnUploadApi.text = getString(R.string.uploading)
                     binding.tvErrorMessage.visibility = View.GONE
                 }
+
                 is Result.Success -> {
                     binding.progressBar4.visibility = View.GONE
 //                    binding.btnUploadApi.isEnabled = true
 //                    binding.btnBack.isEnabled = true
-                    binding.btnUploadApi.text = getString(R.string.lets_upload) // Kembalikan teks tombol
+                    binding.btnUploadApi.text =
+                        getString(R.string.lets_upload) // Kembalikan teks tombol
                     binding.tvErrorMessage.visibility = View.GONE
                     Toast.makeText(context, result.data, Toast.LENGTH_SHORT).show()
 
                     Log.d("UploadDialog", "Upload successful: ${result.data}")
 
                     // Observe scan result after successful upload
-                   observeDataImage() // Start observing scanResult after upload
+                    observeDataImage() // Start observing scanResult after upload
                 }
+
                 is Result.Error -> {
                     binding.progressBar4.visibility = View.GONE
                     binding.btnUploadApi.isEnabled = true
@@ -277,10 +293,14 @@ class FragmentScanSkinType3 : Fragment() {
                     binding.CaptureCameraBtn3.isEnabled = true
                     binding.GrabGallerieBtn3.isEnabled = true
 
-                    binding.btnUploadApi.text = getString(R.string.lets_upload) // Kembalikan teks tombol
+                    binding.btnUploadApi.text =
+                        getString(R.string.lets_upload) // Kembalikan teks tombol
                     binding.tvErrorMessage.visibility = View.VISIBLE
                     binding.tvErrorMessage.text = result.exception.localizedMessage
-                    Log.d("UploadDialog", "Error during upload: ${result.exception.localizedMessage}")
+                    Log.d(
+                        "UploadDialog",
+                        "Error during upload: ${result.exception.localizedMessage}"
+                    )
                 }
             }
         }
@@ -295,48 +315,99 @@ class FragmentScanSkinType3 : Fragment() {
                 val bundle = Bundle().apply {
                     putParcelable("responseScan", it) // Data yang ingin dikirimkan
                 }
-                findNavController().navigate(R.id.action_fragmentScanSkinType3_to_fragmentResultImage, bundle)
+                findNavController().navigate(
+                    R.id.action_fragmentScanSkinType3_to_fragmentResultImage,
+                    bundle
+                )
 
             }
         }
     }
 
+    private fun observedataTest() {
+        val dummyResponse = ScanResponse(
+            status = "success",
+            predictions = Predictions(
+                front = SkinAnalysis(
+                    acneCondition = "No acne",
+                    skinType = "oily",
+                    detectedAcneTypes = emptyList()
+                ),
+                left = SkinAnalysis(
+                    acneCondition = "Severe",
+                    skinType = "oily",
+                    detectedAcneTypes = listOf("dark spot")
+                ),
+                right = SkinAnalysis(
+                    acneCondition = "Severe",
+                    skinType = "normal",
+                    detectedAcneTypes = listOf("dark spot")
+                )
+            ),
+            originalImages = OriginalImages(
+                front = "/uploads/front/front_image.jpg",
+                left = "/uploads/left/left_image.jpg",
+                right = "/uploads/right/right_image.jpg"
+            ),
+            annotatedImages = AnnotatedImages(
+                front = "https://storage.googleapis.com/capstone-koong-test-bucket/front/annotated_front_image.jpg",
+                left = "https://storage.googleapis.com/capstone-koong-test-bucket/left/annotated_left_image.jpg",
+                right = "https://storage.googleapis.com/capstone-koong-test-bucket/right/annotated_right_image.jpg"
+            )
+        )
+
+        val bundle = Bundle().apply {
+            putParcelable("responseScan", dummyResponse)
+        }
+
+        findNavController().navigate(
+            R.id.action_fragmentScanSkinType3_to_fragmentResultImage,
+            bundle
+        )
+    }
+
+
     private fun handleMissingCache() {
-            val frontImageUri = viewModel.frontImage.value
-            val rightImageUri = viewModel.rightImage.value
-            val leftImageUri = viewModel.leftImage.value
+        val frontImageUri = viewModel.frontImage.value
+        val rightImageUri = viewModel.rightImage.value
+        val leftImageUri = viewModel.leftImage.value
 
-            Log.d("MissingCache", "Checking images cache...")
-            Log.d("MissingCache", "frontImageUri: $frontImageUri")
-            Log.d("MissingCache", "rightImageUri: $rightImageUri")
-            Log.d("MissingCache", "leftImageUri: $leftImageUri")
+        Log.d("MissingCache", "Checking images cache...")
+        Log.d("MissingCache", "frontImageUri: $frontImageUri")
+        Log.d("MissingCache", "rightImageUri: $rightImageUri")
+        Log.d("MissingCache", "leftImageUri: $leftImageUri")
 
-            // Step 1: Check if it's the first load or error is already handled
-            if (viewModel.isFirstLoad() && !viewModel.isErrorHandled()) {
-                Log.d("MissingCache", "First load detected. Only showing error text.")
+        // Step 1: Handle first load when no images are uploaded yet
+        if (viewModel.isFirstLoad1()) {
+            if (frontImageUri == null && rightImageUri == null && leftImageUri == null) {
+                Log.d("MissingCache", "First load detected. Showing error text only.")
                 binding.tvErrorMessage.visibility = View.VISIBLE
                 binding.tvErrorMessage.text = getString(R.string.error_no_image_selected)
-                viewModel.markFirstLoadComplete()
-                viewModel.setErrorHandled(true)
-                return
+            } else {
+                Log.d("MissingCache", "First load but images are valid. Proceeding.")
+                binding.tvErrorMessage.visibility = View.GONE
             }
-            viewModel.setErrorHandled(false)
-            // Step 2: Handle the case where images are missing or invalid due to cache deletion
-            if (leftImageUri == null || !isFileValid(leftImageUri) ||
-                frontImageUri == null || !isFileValid(frontImageUri) ||
-                rightImageUri == null || !isFileValid(rightImageUri)) {
-                Log.d("MissingCache", "One or more images are missing or invalid due to cache deletion.")
-                if (!viewModel.isErrorHandled()) {
-                    showErrorDialog()
-                    viewModel.setErrorHandled(true)  // Ensure error dialog is only shown once
-                }
-                viewModel.setErrorHandled(true)
-                return
-            }
-            // Step 3: If images are valid, hide the error message and proceed
-            Log.d("MissingCache", "All images are valid. Proceeding with the next steps.")
-            binding.tvErrorMessage.visibility = View.GONE  // Hide the error message if everything is valid
+            viewModel.markFirstLoadComplete1() // Mark as no longer the first load
+            return
         }
+
+        // Step 2: Handle subsequent errors caused by missing or invalid images
+        if (leftImageUri == null || !isFileValid(leftImageUri) ||
+            frontImageUri == null || !isFileValid(frontImageUri) ||
+            rightImageUri == null || !isFileValid(rightImageUri)
+        ) {
+            Log.d("MissingCache", "Images are missing or invalid (possibly due to cache deletion).")
+            if (!viewModel.isErrorHandled1()) {
+                showErrorDialog() // Show dialog if not already shown
+                viewModel.setErrorHandled1(true) // Mark the error as handled
+            }
+            return
+        }
+        // Step 3: If images are valid, hide the error message and proceed
+        Log.d("MissingCache", "All images are valid. Proceeding with the next steps.")
+        binding.tvErrorMessage.visibility =
+            View.GONE  // Hide the error message if everything is valid
+    }
 
 
     private fun showErrorDialog() {
