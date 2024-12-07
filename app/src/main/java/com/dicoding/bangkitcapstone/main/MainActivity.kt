@@ -1,4 +1,4 @@
-package com.dicoding.bangkitcapstone.ui.main
+package com.dicoding.bangkitcapstone.main
 
 import android.Manifest
 import android.content.Context

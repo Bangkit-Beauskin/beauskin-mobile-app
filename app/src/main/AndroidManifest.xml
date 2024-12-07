@@ -41,7 +41,7 @@
             android:name=".auth.OtpVerificationActivity"
             android:exported="false"/>
         <activity
-            android:name=".ui.main.MainActivity"
+            android:name=".main.MainActivity"
             android:exported="true"/>
 
         <activity

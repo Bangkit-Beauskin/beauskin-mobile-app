@@ -11,7 +11,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.dicoding.bangkitcapstone.ui.main.MainActivity
+import com.dicoding.bangkitcapstone.main.MainActivity
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.databinding.FragmentInformationScanBinding
 import java.io.File
