@@ -67,17 +67,18 @@
     <string name="right_annotated_image">Right Annotated Image</string>
 
     <!-- Predictions Section -->
-    <string name="front_condition">Front Skin Condition</string>
-    <string name="front_skin_type">Front Skin Type</string>
-    <string name="front_acne_types">Detected Acne Types (Front)</string>
+    <string name="front_condition">Front Skin Condition: %1$s</string>
+    <string name="front_skin_type">Front Skin Type: %1$s</string>
+    <string name="front_acne_types">Detected Acne Types (Front): %1$s</string>
 
-    <string name="left_condition">Left Skin Condition</string>
-    <string name="left_skin_type">Left Skin Type</string>
-    <string name="left_acne_types">Detected Acne Types (Left)</string>
+    <string name="left_condition">Left Skin Condition: %1$s</string>
+    <string name="left_skin_type">Left Skin Type: %1$s</string>
+    <string name="left_acne_types">Detected Acne Types (Left): %1$s</string>
 
-    <string name="right_condition">Right Skin Condition</string>
-    <string name="right_skin_type">Right Skin Type</string>
-    <string name="right_acne_types">Detected Acne Types (Right)</string>
+    <string name="right_condition">Right Skin Condition: %1$s</string>
+    <string name="right_skin_type">Right Skin Type: %1$s</string>
+    <string name="right_acne_types">Detected Acne Types (Right): %1$s</string>
+
 
     <!-- Action Button -->
     <string name="get_recommendation">Get Recommendation</string>

@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.data.model.ScanResponse
 import com.dicoding.bangkitcapstone.databinding.FragmentResultImageBinding
 
@@ -18,7 +19,6 @@ class FragmentResultImage : Fragment() {
 
     private var _binding: FragmentResultImageBinding? = null
     private val binding get() = _binding!!
-
 
 
     override fun onCreateView(
@@ -56,28 +56,67 @@ class FragmentResultImage : Fragment() {
             "${scanResponse.annotatedImages.right}?timestamp=${System.currentTimeMillis()}"
 
         // Set kondisi dan jenis kulit untuk gambar depan
-        binding.tvFrontCondition.text = scanResponse.predictions.front.acneCondition
-        binding.tvFrontSkinType.text = scanResponse.predictions.front.skinType
-        binding.tvFrontAcneTypes.text =
-            scanResponse.predictions.front.detectedAcneTypes.joinToString(", ")
+        binding.tvFrontCondition.text = getString(
+            R.string.front_condition,
+            scanResponse.predictions.front.acneCondition
+        )
+
+        binding.tvFrontSkinType.text = getString(
+            R.string.front_skin_type,
+            scanResponse.predictions.front.skinType
+        )
+
+        binding.tvFrontAcneTypes.text = getString(
+            R.string.front_acne_types,
+            if (scanResponse.predictions.front.detectedAcneTypes.isEmpty()) {
+                "-"
+            } else {
+                scanResponse.predictions.front.detectedAcneTypes.joinToString(", ")
+            }
+        )
 
         // Set gambar depan
         loadImage(frontImageUrl, binding.ivFrontAnnotated)
 
         // Set kondisi dan jenis kulit untuk gambar kiri
-        binding.tvLeftCondition.text = scanResponse.predictions.left.acneCondition
-        binding.tvLeftSkinType.text = scanResponse.predictions.left.skinType
-        binding.tvLeftAcneTypes.text =
-            scanResponse.predictions.left.detectedAcneTypes.joinToString(", ")
+        binding.tvLeftCondition.text = getString(
+            R.string.left_condition,
+            scanResponse.predictions.left.acneCondition
+        )
+        binding.tvLeftSkinType.text = getString(
+            R.string.left_skin_type,
+            scanResponse.predictions.left.skinType
+        )
+
+        binding.tvLeftAcneTypes.text = getString(
+            R.string.left_acne_types,
+            if (scanResponse.predictions.left.detectedAcneTypes.isEmpty()) {
+                "-"
+            } else {
+                scanResponse.predictions.left.detectedAcneTypes.joinToString(", ")
+            }
+        )
 
         // Set gambar gambar kiri
         loadImage(leftImageUrl, binding.ivLeftAnnotated)
 
         // Set kondisi dan jenis kulit untuk gambar kanan
-        binding.tvRightCondition.text = scanResponse.predictions.right.acneCondition
-        binding.tvRightSkinType.text = scanResponse.predictions.right.skinType
-        binding.tvRightAcneTypes.text =
-            scanResponse.predictions.right.detectedAcneTypes.joinToString(", ")
+        binding.tvRightCondition.text = getString(
+            R.string.right_condition,
+            scanResponse.predictions.right.acneCondition
+        )
+        binding.tvRightSkinType.text = getString(
+            R.string.right_skin_type,
+            scanResponse.predictions.right.skinType
+        )
+        binding.tvRightAcneTypes.text = getString(
+            R.string.right_acne_types,
+            if (scanResponse.predictions.right.detectedAcneTypes.isEmpty()) {
+                "-"
+            } else {
+                scanResponse.predictions.right.detectedAcneTypes.joinToString(", ")
+            }
+        )
 
         // Set gambar gambar kanan
         loadImage(rightImageUrl, binding.ivRightAnnotated)

@@ -20,8 +20,10 @@ class ScanViewModel @Inject constructor(
 
     // Flag to track first initialization
     private var isFirstLoad = true
+    private var isFirstLoad1 = true
 
     private var isErrorHandled = false  // Flag untuk menandai error sudah ditangani
+    private var isErrorHandled1 = false  // Flag untuk menandai error sudah ditangani
 
 
     private val _frontImage = MutableLiveData<Uri?>()
@@ -55,12 +57,31 @@ class ScanViewModel @Inject constructor(
         isFirstLoad = false
     }
 
+    fun isFirstLoad1(): Boolean {
+        return isFirstLoad1
+    }
+
+    // Mark the first load as complete
+    fun markFirstLoadComplete1() {
+        isFirstLoad1 = false
+    }
+
+
+
     fun setErrorHandled(isHandled: Boolean) {
         isErrorHandled = isHandled
     }
 
     fun isErrorHandled(): Boolean {
         return isErrorHandled
+    }
+
+    fun setErrorHandled1(isHandled: Boolean) {
+        isErrorHandled1 = isHandled
+    }
+
+    fun isErrorHandled1(): Boolean {
+        return isErrorHandled1
     }
 
     private val _scanResult = MutableLiveData<ScanResponse?>()
