@@ -81,7 +81,10 @@
 
 
     <!-- Action Button -->
-    <string name="get_recommendation">Get Recommendation</string>
+    <string name="get_recommendation">Get Recommendations</string>
+    <string name="select_a_feature_to_proceed">Select a Feature to Proceed</string>
+    <string name="try_scanning_again">Try Scanning \nAgain</string>
+    <string name="try_our_chatbot">Try Our Chatbot</string>
 
 
 </resources>
