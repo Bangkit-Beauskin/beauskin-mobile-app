@@ -43,7 +43,12 @@
         <activity
             android:name=".main.MainActivity"
             android:exported="true"/>
-
+        <activity
+            android:name=".detail.ProductDetailActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".detail.NewsDetailActivity"
+            android:exported="false"/>
         <activity
             android:name=".scan.ScanActivity"
             android:exported="false"/>

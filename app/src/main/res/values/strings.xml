@@ -10,6 +10,11 @@
     <string name="error_username_too_short">Username must be at least 3 characters</string>
     <string name="msg_confirm_username">Please confirm or edit your display name</string>
     <string name="camera_permission_required">Camera permission is required to take photos</string>
+    <string name="skin_type_format">For %1$s skin type</string>
+    <string name="all_skin_types">all</string>
+    <string name="no_description">No description available</string>
+    <string name="no_content">No content available</string>
+    <string name="untitled">untitled</string>
 
     <!-- Permission messages -->
     <string name="permission_rationale">Please grant access to all required permissions for the camera and gallery to ensure the app works properly.</string>
