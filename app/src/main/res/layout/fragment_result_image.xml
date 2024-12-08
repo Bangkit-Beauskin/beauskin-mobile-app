@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-   >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
 
         <!-- ConstraintLayout with Back Button and Title -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -45,170 +44,50 @@
                 app:layout_constraintVertical_bias="0.2" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Card for Front Image with Condition and Skin Type -->
-        <androidx.cardview.widget.CardView
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_height="350dp"
             android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="32dp" />
 
-            app:cardBackgroundColor="#F9F3CC"
-            app:cardCornerRadius="15dp"
-            app:cardElevation="4dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <ImageView
-                    android:id="@+id/ivFrontAnnotated"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="center"
-                    app:srcCompat="@drawable/baseline_image_24"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="16dp"
-                    android:scaleType="centerCrop" />
-
-                <!-- Condition and Skin Type Information -->
-                <TextView
-                    android:id="@+id/tvFrontCondition"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/front_condition"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvFrontSkinType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/front_skin_type" />
-
-                <TextView
-                    android:id="@+id/tvFrontAcneTypes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/front_acne_types" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Card for Left Image with Condition and Skin Type -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
+        <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+            android:id="@+id/dotsIndicator"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
-            app:cardBackgroundColor="#F9F3CC"
-            app:cardCornerRadius="15dp"
-            app:cardElevation="4dp">
+            android:layout_marginTop="8dp"
+            android:layout_gravity="center_horizontal"
+            app:dotsColor="@color/navy_blue"
+            app:dotsSize="12dp"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <ImageView
-                    android:id="@+id/ivLeftAnnotated"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="center"
-                    app:srcCompat="@drawable/baseline_image_24"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="16dp"
-                    android:scaleType="centerCrop" />
-
-                <!-- Condition and Skin Type Information -->
-                <TextView
-                    android:id="@+id/tvLeftCondition"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/left_condition"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvLeftSkinType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/left_skin_type" />
-
-                <TextView
-                    android:id="@+id/tvLeftAcneTypes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/left_acne_types" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Card for Right Image with Condition and Skin Type -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvSwipeHint"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginTop="8dp"
+            android:text="Swipe Result to View More"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal" />
 
-            app:cardBackgroundColor="#F9F3CC"
-            app:cardCornerRadius="15dp"
-            app:cardElevation="4dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <ImageView
-                    android:id="@+id/ivRightAnnotated"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="center"
-                    app:srcCompat="@drawable/baseline_image_24"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="16dp"
-                    android:scaleType="centerCrop" />
-
-                <!-- Condition and Skin Type Information -->
-                <TextView
-                    android:id="@+id/tvRightCondition"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/right_condition"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvRightSkinType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/right_skin_type" />
-
-                <TextView
-                    android:id="@+id/tvRightAcneTypes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/right_acne_types" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
         <!-- Action Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNextAction"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/get_recommendation"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="12dp"
-
             android:layout_marginStart="32dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="32dp"
+
+            android:layout_marginBottom="12dp"
             android:backgroundTint="@color/navy_blue"
+            android:text="@string/get_recommendation"
             android:textColor="@color/white" />
 
     </LinearLayout>

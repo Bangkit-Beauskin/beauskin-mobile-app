@@ -2,27 +2,29 @@ package com.dicoding.bangkitcapstone.scan
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.dicoding.bangkitcapstone.R
+import com.dicoding.bangkitcapstone.adapter.CarouselAdapter
 import com.dicoding.bangkitcapstone.data.model.ScanResponse
 import com.dicoding.bangkitcapstone.databinding.FragmentResultImageBinding
 import com.dicoding.bangkitcapstone.main.MainActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlin.math.abs
 
 @Suppress("DEPRECATION")
 class FragmentResultImage : Fragment() {
 
     private var _binding: FragmentResultImageBinding? = null
     private val binding get() = _binding!!
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,107 +33,64 @@ class FragmentResultImage : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentResultImageBinding.inflate(inflater, container, false)
 
-        // Ambil objek ScanResponse dari Bundle
+        // Get ScanResponse object from Bundle
         val scanResponse: ScanResponse? = arguments?.getParcelable("responseScan")
 
-
-        if (scanResponse == null) {
+        scanResponse?.let {
+            setupCarousel(it)
+            showHintDialog()
+            setupAutoSwipe()
+        } ?: run {
             // Handle null case (e.g., show a placeholder or error message)
             Toast.makeText(requireContext(), "No scan data available", Toast.LENGTH_SHORT).show()
-        } else {
-            displayScanResults(scanResponse)
         }
 
         return binding.root
     }
 
-    private fun displayScanResults(scanResponse: ScanResponse) {
+    private fun setupCarousel(scanResponse: ScanResponse) {
+        val carouselItems = getCarouselItems(scanResponse)
+        val adapter = CarouselAdapter(carouselItems)
+        binding.recyclerView.adapter = adapter
 
-        Log.d("GlideURL", "Front Image URL: ${scanResponse.annotatedImages.front}")
-        Log.d("GlideURL", "Left Image URL: ${scanResponse.annotatedImages.left}")
-        Log.d("GlideURL", "Right Image URL: ${scanResponse.annotatedImages.right}")
+        val dotsIndicator = binding.dotsIndicator
+        dotsIndicator.attachTo(binding.recyclerView)
 
-        val frontImageUrl =
-            "${scanResponse.annotatedImages.front}?timestamp=${System.currentTimeMillis()}"
-        val leftImageUrl =
-            "${scanResponse.annotatedImages.left}?timestamp=${System.currentTimeMillis()}"
-        val rightImageUrl =
-            "${scanResponse.annotatedImages.right}?timestamp=${System.currentTimeMillis()}"
+        binding.recyclerView.setPageTransformer { page, position ->
+            val absPos = abs(position)
 
-        // Set kondisi dan jenis kulit untuk gambar depan
-        binding.tvFrontCondition.text = getString(
-            R.string.front_condition,
-            scanResponse.predictions.front.acneCondition
-        )
+            page.scaleY = 1 - (absPos * 0.2f)
+            page.alpha = 1 - absPos
 
-        binding.tvFrontSkinType.text = getString(
-            R.string.front_skin_type,
-            scanResponse.predictions.front.skinType
-        )
+            page.scaleX = 1 - (absPos * 0.1f)
 
-        binding.tvFrontAcneTypes.text = getString(
-            R.string.front_acne_types,
-            if (scanResponse.predictions.front.detectedAcneTypes.isEmpty()) {
-                "-"
-            } else {
-                scanResponse.predictions.front.detectedAcneTypes.joinToString(", ")
-            }
-        )
-
-        // Set gambar depan
-        loadImage(frontImageUrl, binding.ivFrontAnnotated)
-
-        // Set kondisi dan jenis kulit untuk gambar kiri
-        binding.tvLeftCondition.text = getString(
-            R.string.left_condition,
-            scanResponse.predictions.left.acneCondition
-        )
-        binding.tvLeftSkinType.text = getString(
-            R.string.left_skin_type,
-            scanResponse.predictions.left.skinType
-        )
-
-        binding.tvLeftAcneTypes.text = getString(
-            R.string.left_acne_types,
-            if (scanResponse.predictions.left.detectedAcneTypes.isEmpty()) {
-                "-"
-            } else {
-                scanResponse.predictions.left.detectedAcneTypes.joinToString(", ")
-            }
-        )
-
-        // Set gambar gambar kiri
-        loadImage(leftImageUrl, binding.ivLeftAnnotated)
-
-        // Set kondisi dan jenis kulit untuk gambar kanan
-        binding.tvRightCondition.text = getString(
-            R.string.right_condition,
-            scanResponse.predictions.right.acneCondition
-        )
-        binding.tvRightSkinType.text = getString(
-            R.string.right_skin_type,
-            scanResponse.predictions.right.skinType
-        )
-        binding.tvRightAcneTypes.text = getString(
-            R.string.right_acne_types,
-            if (scanResponse.predictions.right.detectedAcneTypes.isEmpty()) {
-                "-"
-            } else {
-                scanResponse.predictions.right.detectedAcneTypes.joinToString(", ")
-            }
-        )
-
-        // Set gambar gambar kanan
-        loadImage(rightImageUrl, binding.ivRightAnnotated)
+            // Menambahkan interpolator kustom jika diperlukan untuk efek lebih halus
+            val interpolator = AccelerateDecelerateInterpolator()
+            page.translationX = interpolator.getInterpolation(position) * page.width
+        }
 
     }
 
-    private fun loadImage(url: String, imageView: ImageView) {
-        Glide.with(requireContext())
-            .load(url)
-            .skipMemoryCache(true)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .into(imageView)
+    private fun showHintDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Yay! Analysis Success")
+            .setMessage("Swipe left or right to view the complete analysis!")
+            .setPositiveButton("Got it") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun setupAutoSwipe() {
+        val handler = Handler(Looper.getMainLooper())
+        val runnable = object : Runnable {
+            var currentPage = 0
+            override fun run() {
+                if (currentPage == binding.recyclerView.adapter?.itemCount) currentPage = 0
+
+                binding.recyclerView.setCurrentItem(currentPage++, true)
+                handler.postDelayed(this, 8000)
+            }
+        }
+        handler.post(runnable)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -156,7 +115,10 @@ class FragmentResultImage : Fragment() {
                     Log.e("Fragment", "Error showing ResultScanBottomSheetDialog: ${e.message}", e)
                 }
             } else {
-                Log.e("Fragment", "parentFragmentManager is destroyed, cannot show ResultScanBottomSheetDialog")
+                Log.e(
+                    "Fragment",
+                    "parentFragmentManager is destroyed, cannot show ResultScanBottomSheetDialog"
+                )
             }
         }
 
@@ -176,6 +138,76 @@ class FragmentResultImage : Fragment() {
         Log.d("FragmentResultImage", "Navigating Back to MainActivity")
         startActivity(intent, options.toBundle())
         requireActivity().finishAffinity()
+    }
+
+
+    data class CarouselItem(
+        val imageUrl: String,
+        val condition: String,
+        val skinType: String,
+        val acneTypes: String
+    )
+
+    private fun getCarouselItems(scanResponse: ScanResponse): List<CarouselItem> {
+        return listOf(
+            CarouselItem( // front image
+                imageUrl = "${scanResponse.annotatedImages.front}?timestamp=${System.currentTimeMillis()}",
+                condition = getString(
+                    R.string.front_condition,
+                    scanResponse.predictions.front.acneCondition
+                ),
+                skinType = getString(
+                    R.string.front_skin_type,
+                    scanResponse.predictions.front.skinType
+                ),
+                acneTypes = getString(
+                    R.string.front_acne_types,
+                    if (scanResponse.predictions.front.detectedAcneTypes.isEmpty()) {
+                        "-"
+                    } else {
+                        scanResponse.predictions.front.detectedAcneTypes.joinToString(", ")
+                    }
+                )
+            ),
+            CarouselItem( // left image
+                imageUrl = "${scanResponse.annotatedImages.left}?timestamp=${System.currentTimeMillis()}",
+                condition = getString(
+                    R.string.left_condition,
+                    scanResponse.predictions.left.acneCondition
+                ),
+                skinType = getString(
+                    R.string.left_skin_type,
+                    scanResponse.predictions.left.skinType
+                ),
+                acneTypes = getString(
+                    R.string.left_acne_types,
+                    if (scanResponse.predictions.left.detectedAcneTypes.isEmpty()) {
+                        "-"
+                    } else {
+                        scanResponse.predictions.left.detectedAcneTypes.joinToString(", ")
+                    }
+                )
+            ),
+            CarouselItem( // right image
+                imageUrl = "${scanResponse.annotatedImages.right}?timestamp=${System.currentTimeMillis()}",
+                condition = getString(
+                    R.string.right_condition,
+                    scanResponse.predictions.right.acneCondition
+                ),
+                skinType = getString(
+                    R.string.right_skin_type,
+                    scanResponse.predictions.right.skinType
+                ),
+                acneTypes = getString(
+                    R.string.right_acne_types,
+                    if (scanResponse.predictions.right.detectedAcneTypes.isEmpty()) {
+                        "-"
+                    } else {
+                        scanResponse.predictions.right.detectedAcneTypes.joinToString(", ")
+                    }
+                )
+            )
+        )
     }
 
     override fun onDestroyView() {
