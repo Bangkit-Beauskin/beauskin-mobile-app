@@ -84,12 +84,15 @@ class FragmentResultImage : Fragment() {
         val runnable = object : Runnable {
             var currentPage = 0
             override fun run() {
-                if (currentPage == binding.recyclerView.adapter?.itemCount) currentPage = 0
+                if (_binding == null)
+                    return
 
+                if (currentPage == binding.recyclerView.adapter?.itemCount) currentPage = 0
                 binding.recyclerView.setCurrentItem(currentPage++, true)
                 handler.postDelayed(this, 8000)
             }
         }
+
         handler.post(runnable)
     }
 
