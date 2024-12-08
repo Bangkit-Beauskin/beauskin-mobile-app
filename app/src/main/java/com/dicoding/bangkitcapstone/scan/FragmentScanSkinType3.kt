@@ -409,8 +409,8 @@ class FragmentScanSkinType3 : Fragment() {
 
     private fun showErrorDialog() {
         val dialog = android.app.AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.error_title))  // You can customize this string in your strings.xml
-            .setMessage(getString(R.string.error_message))  // Custom error message
+            .setTitle(getString(R.string.error_title))
+            .setMessage(getString(R.string.error_message))
             .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
 
