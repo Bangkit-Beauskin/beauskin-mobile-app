@@ -2,6 +2,7 @@ package com.dicoding.bangkitcapstone.di
 
 import android.content.Context
 import com.dicoding.bangkitcapstone.data.api.ApiService
+import com.dicoding.bangkitcapstone.data.api.ChatApiService
 import com.dicoding.bangkitcapstone.data.api.ScanApiService
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import dagger.Module
@@ -78,5 +79,24 @@ object NetworkModule {
     @Named("scan")
     fun provideScanApiService(@Named("scan") retrofit: Retrofit): ScanApiService {
         return retrofit.create(ScanApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @Named("chatbot")
+    fun provideChatbotRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(com.dicoding.bangkitcapstone.BuildConfig.BASE_URL_CHAT)  // Use the scan endpoint from BuildConfig
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+    }
+
+    // Provide ChatBotService
+    @Provides
+    @Singleton
+    @Named("chatbot")
+    fun provideChatbotService(@Named("scan") retrofit: Retrofit): ChatApiService {
+        return retrofit.create(ChatApiService::class.java)
     }
 }

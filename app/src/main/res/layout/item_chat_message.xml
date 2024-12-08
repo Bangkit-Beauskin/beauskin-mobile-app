@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Untuk Pesan User -->
+    <LinearLayout
+        android:id="@+id/userMessageLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="start"
+        android:layout_marginEnd="16dp">
+
+        <TextView
+            android:id="@+id/userMessageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/user_message_background"
+            android:padding="10dp"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_regular"
+            android:maxWidth="240dp"
+            android:text="User message"
+            android:layout_alignParentStart="true"/>
+    </LinearLayout>
+
+    <!-- Untuk Pesan Bot -->
+    <LinearLayout
+        android:id="@+id/chatbotMessageLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:layout_marginStart="70dp"
+        android:layout_marginBottom="0dp">
+
+        <TextView
+            android:id="@+id/chatbotMessageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chatbot_message_background"
+            android:padding="10dp"
+            android:textColor="@color/black"
+            android:maxWidth="240dp"
+            android:fontFamily="@font/poppins_regular"
+            android:text="Chatbot message"
+            android:layout_alignParentEnd="true"/>
+    </LinearLayout>
+</LinearLayout>
+
