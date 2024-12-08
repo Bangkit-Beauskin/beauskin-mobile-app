@@ -242,10 +242,10 @@ class FragmentScanSkinType3 : Fragment() {
             .setMessage(getString(R.string.confirm_upload_message))
             .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 Log.d("UploadDialog", "User confirmed upload, starting image upload.")
-//                viewModel.uploadImages()
-//                observeUploadimages()
+                viewModel.uploadImages()
+                observeUploadimages()
 
-               observedataTest()
+              // observedataTest()
             }
             .setNegativeButton(getString(R.string.no)) { dialog, _ ->
                 Log.d("UploadDialog", "User canceled upload, closing dialog.")
