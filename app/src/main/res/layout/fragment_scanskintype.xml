@@ -31,6 +31,7 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@id/btnBack"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.55"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/btnBack" />
 
@@ -90,7 +91,7 @@
             android:layout_width="340dp"
             android:layout_height="300dp"
             android:layout_margin="14dp"
-            app:cardBackgroundColor="#F9F3CC"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="15dp"
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"

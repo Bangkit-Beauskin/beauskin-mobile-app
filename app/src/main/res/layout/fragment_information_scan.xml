@@ -47,7 +47,7 @@
                 android:layout_marginStart="25dp"
                 android:layout_marginTop="14dp"
                 android:layout_marginEnd="25dp"
-                app:cardBackgroundColor="#F9F3CC"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="15dp"
                 app:cardElevation="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -99,7 +99,7 @@
                 android:layout_marginTop="14dp"
                 android:layout_marginEnd="25dp"
 
-                app:cardBackgroundColor="#F9F3CC"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="15dp"
                 app:cardElevation="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
