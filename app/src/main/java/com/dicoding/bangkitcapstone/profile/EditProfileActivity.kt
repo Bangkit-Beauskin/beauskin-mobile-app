@@ -1,341 +1,262 @@
 package com.dicoding.bangkitcapstone.profile
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
-import com.dicoding.bangkitcapstone.BuildConfig
 import com.dicoding.bangkitcapstone.R
-import com.dicoding.bangkitcapstone.data.model.ProfileData
-import com.dicoding.bangkitcapstone.data.model.ProfileState
 import com.dicoding.bangkitcapstone.data.model.UpdateProfileState
 import com.dicoding.bangkitcapstone.databinding.ActivityEditProfileBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
 
 @AndroidEntryPoint
 class EditProfileActivity : AppCompatActivity() {
-    private var _binding: ActivityEditProfileBinding? = null
-    private val binding get() = _binding!!
+
+    private lateinit var binding: ActivityEditProfileBinding
+    private var currentImageUri: Uri? = null
+    private var initialUsername: String = ""
+    private var initialProfileUrl: String = ""
+
     private val viewModel: ProfileViewModel by viewModels()
-
-    private var selectedImageUri: Uri? = null
-    private var isImageChanged = false
-    private var isNameChanged = false
-    private lateinit var currentPhotoPath: String
-    private var imageLoadRetryCount = 0
-    private val MAX_RETRY_COUNT = 3
-
-    private val cameraPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            startCamera()
-        } else {
-            showError(getString(R.string.camera_permission_required))
-        }
-    }
-
-    private val takePicture = registerForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success) {
-            selectedImageUri = Uri.fromFile(File(currentPhotoPath))
-            isImageChanged = true
-            previewSelectedImage(selectedImageUri!!)
-            updateSaveButtonState()
-        }
-    }
-
-    private val getContent = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            selectedImageUri = it
-            isImageChanged = true
-            previewSelectedImage(it)
-            updateSaveButtonState()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityEditProfileBinding.inflate(layoutInflater)
+
+        binding = ActivityEditProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupViews()
-        observeViewModel()
-        viewModel.fetchProfile()
-    }
+        // Ambil data yang dikirim dari ProfileActivity
+        initialUsername = intent.getStringExtra("CURRENT_USERNAME") ?: ""
+        initialProfileUrl = intent.getStringExtra("CURRENT_PROFILE_URL") ?: ""
 
-    private fun setupViews() {
-        binding.apply {
-            btnBack.setOnClickListener {
-                setResult(RESULT_CANCELED)
-                finish()
+
+        binding.edtName.setText(initialUsername)
+        Glide.with(this)
+            .load(initialProfileUrl)
+            .placeholder(R.drawable.baseline_person_24)
+            .error(R.drawable.baseline_person_24)
+            .circleCrop()
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .into(binding.profileImage)
+
+        // Tombol kembali
+        binding.btnBack.setOnClickListener {
+
+            showDiscardChangesDialog()
+            Log.d(
+                "EditProfileActivity",
+                "Back button clicked. Deleting cache and finishing activity."
+            )
+        }
+
+        // Add back button handling using OnBackPressedDispatcher
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Log.d("EditProfileActivity", "Back pressed. Deleting cache and finishing activity.")
+                showDiscardChangesDialog()
+            }
+        })
+
+        // Tombol pilih gambar (Gallery atau Camera)
+        binding.btnEditImage.setOnClickListener {
+            Log.d("EditProfileActivity", "Profile image clicked, showing image picker.")
+            showImagePickerDialog()
+        }
+
+        // Periksa apakah ada perubahan pada data
+        binding.edtName.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                toggleSaveButton()
+            }
+        })
+
+        // Tombol simpan perubahan
+        binding.btnSave.setOnClickListener {
+            val updatedUsername = binding.edtName.text.toString()
+            val updatedProfileUri = currentImageUri ?: Uri.parse(initialProfileUrl)
+
+            Log.d(
+                "EditProfileActivity",
+                "Save button clicked. Sending updated data: $updatedUsername, $updatedProfileUri"
+            )
+
+            // Validasi input
+            if (!validateInput(updatedUsername)) {
+                Log.d("EditProfileActivity", "Invalid input. Aborting save process.")
+                return@setOnClickListener
             }
 
-            btnSave.setOnClickListener { handleSave() }
-            btnSave.isEnabled = false
-
-            btnEditImage.setOnClickListener { showImagePickerDialog() }
-
-            edtName.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: Editable?) {
-                    val currentName = s?.toString() ?: ""
-                    isNameChanged = currentName != viewModel.getCurrentUsername()
-                    updateSaveButtonState()
-                }
-            })
+            // Update profile in ViewModel
+            Log.d("EditProfileActivity", "Updating profile in ViewModel.")
+            handleProfileUpdate(updatedUsername, updatedProfileUri)
+            observeViewModel()
         }
     }
 
+    private fun handleProfileUpdate(updatedUsername: String, updatedProfileUri: Uri) {
+        // Show the loading overlay and progress bar
+        binding.loadingOverlay.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+
+        Log.d("EditProfileActivity", "Handling profile update. $updatedUsername, $updatedProfileUri")
+
+        // Check if there's a change in username
+        if (updatedUsername != initialUsername) {
+            Log.d("EditProfileActivity", "Username changed. Updating profile.")
+            viewModel.updateProfile(updatedUsername)
+        }
+
+        // Check if there's a change in profile photo
+        if (updatedProfileUri != Uri.parse(initialProfileUrl)) {
+            Log.d("EditProfileActivity", "Profile photo changed. Updating profile photo. $updatedProfileUri & $updatedUsername")
+            viewModel.uploadProfilePhoto(updatedProfileUri, updatedUsername)
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.updateState.observe(this) { state ->
+            when (state) {
+                is UpdateProfileState.Loading -> showLoading(true)
+                is UpdateProfileState.Success -> {
+                    showLoading(false)
+                    finish()
+                }
+
+                is UpdateProfileState.Error -> {
+                    showLoading(false)
+                    Toast.makeText(this, state.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+
+    private fun showLoading(isLoading: Boolean) {
+        binding.progressBar.isVisible = isLoading
+        binding.loadingOverlay.isVisible = isLoading
+    }
+
+    private fun showDiscardChangesDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Discard Changes?")
+            .setMessage("You have unsaved changes. Are you sure you want to discard them?")
+            .setPositiveButton("Yes") { _, _ ->
+
+                deleteCacheFile()
+                finish() }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    // Fungsi untuk memilih gambar dari galeri atau kamera
     private fun showImagePickerDialog() {
         val dialog = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.dialog_image_picker, null)
 
         view.findViewById<View>(R.id.btnCamera).setOnClickListener {
             dialog.dismiss()
-            checkCameraPermission()
+            Log.d("EditProfileActivity", "Camera option selected.")
+            startCamera()
         }
 
         view.findViewById<View>(R.id.btnGallery).setOnClickListener {
             dialog.dismiss()
-            getContent.launch("image/*")
+            Log.d("EditProfileActivity", "Gallery option selected.")
+            startGallery()
         }
 
         dialog.setContentView(view)
         dialog.show()
     }
 
-    private fun checkCameraPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                startCamera()
-            }
-            else -> {
-                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
-        }
-    }
-
+    // Start Camera
     private fun startCamera() {
-        try {
-            val photoFile = createImageFile()
-            val photoURI = FileProvider.getUriForFile(
-                this,
-                "${BuildConfig.APPLICATION_ID}.provider",
-                photoFile
-            )
-            takePicture.launch(photoURI)
+        Log.d("EditProfileActivity", "Starting camera.")
+        deleteCacheFile(currentImageUri)
+
+        currentImageUri = createCacheUri()
+        currentImageUri?.let { uri ->
+            launcherCamera.launch(uri) // Meluncurkan kamera dengan URI yang dihasilkan
+        } ?: Log.e("Camera", "Failed to create URI for camera image")
+    }
+
+    // Start Gallery
+    private fun startGallery() {
+        Log.d("EditProfileActivity", "Starting gallery.")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            launcherGallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            pickImageLauncherLegacy.launch("image/*") // Menggunakan GetContent untuk versi Android lebih lama
+        }
+    }
+
+    // Pengecekan apakah file gambar valid
+    private fun isFileValid(uri: Uri?): Boolean {
+        if (uri == null) return false
+
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            inputStream?.use { stream ->
+
+                return stream.available() > 0
+            } ?: false
         } catch (e: Exception) {
-            Log.e("EditProfileActivity", "Error starting camera", e)
-            showError("Failed to start camera")
+            Log.e("EditProfileActivity", "Error checking file validity: ${e.localizedMessage}")
+            false
         }
     }
 
-    private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir = getExternalFilesDir(null)
-        return File.createTempFile(
-            "JPEG_${timeStamp}_",
-            ".jpg",
-            storageDir
-        ).apply {
-            currentPhotoPath = absolutePath
-        }
-    }
+    // Handle pemilihan gambar
+    private fun handleImageSelection(uri: Uri?) {
+        if (uri != null) {
+            try {
+                Log.d("EditProfileActivity", "Handling selected image: $uri")
+                // Hapus file cache sebelumnya
+                deleteCacheFile(currentImageUri)
 
-    private fun handleSave() {
-        val username = binding.edtName.text.toString()
-        if (!validateInput(username)) return
+                val cacheUri =
+                    createCacheUri(uri) ?: uri
 
-        showLoading(true)
-
-        viewModel.updateProfile(username)
-
-        if (isImageChanged && selectedImageUri != null) {
-            viewModel.uploadProfilePhoto(selectedImageUri!!, username)
-        }
-    }
-
-    private fun observeViewModel() {
-        viewModel.profileState.observe(this) { state ->
-            when (state) {
-                is ProfileState.Loading -> showLoading(true)
-                is ProfileState.Success -> {
-                    showLoading(false)
-                    updateUI(state.data)
+                // Check if the file is valid before displaying it
+                if (isFileValid(cacheUri)) {
+                    currentImageUri = cacheUri
+                    displayImage(cacheUri)
+                    Log.d("Image", "Image selected and cached: $cacheUri")
+                } else {
+                    Log.e("Image", "Invalid image file")
                 }
-                is ProfileState.Error -> {
-                    showLoading(false)
-                    handleError(state.message)
-                }
-            }
-        }
-
-        viewModel.updateState.observe(this) { state ->
-            when (state) {
-                is UpdateProfileState.Loading -> showLoading(true)
-                is UpdateProfileState.Success -> {
-                    showLoading(false)
-                    Toast.makeText(this, state.message, Toast.LENGTH_SHORT).show()
-                    setResult(RESULT_OK)
-                    finish()
-                }
-                is UpdateProfileState.Error -> {
-                    showLoading(false)
-                    showError(state.message)
-                }
+            } catch (e: Exception) {
+                Log.e("Image", "Failed to handle selected image: ${e.localizedMessage}")
             }
         }
     }
 
-    private fun updateUI(profileData: ProfileData) {
-        binding.apply {
-            val username = profileData.username.ifEmpty {
-                getSharedPreferences("auth", Context.MODE_PRIVATE)
-                    .getString("email", "")
-                    ?.substringBefore("@") ?: ""
-            }
-
-            edtName.setText(username)
-            loadProfileImage(profileData.profileUrl)
-
-            btnSave.isEnabled = false
-            isNameChanged = false
-            isImageChanged = false
-        }
-    }
-
-    private fun loadProfileImage(url: String?) {
-        Log.d("EditProfileActivity", "Loading profile image with URL: $url")
-
-        if (!isValidImageUrl(url)) {
-            Log.d("EditProfileActivity", "Invalid or null URL, using default image")
-            binding.profileImage.setImageResource(R.drawable.baseline_person_24)
-            binding.profileImage.setBackgroundResource(R.drawable.profile_placeholder)
-            binding.progressBar.isVisible = false
-            return
-        }
-
-        binding.progressBar.isVisible = true
-
-        val secureUrl = url!!.replace("http://", "https://").trim()
-        Log.d("EditProfileActivity", "Using secure URL: $secureUrl")
-
-        Glide.with(this)
-            .load(secureUrl)
-            .timeout(30000)
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .placeholder(R.drawable.baseline_person_24)
-            .error(R.drawable.baseline_person_24)
-            .circleCrop()
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    binding.progressBar.isVisible = false
-                    Log.e("EditProfileActivity", "Failed to load image from URL: $secureUrl", e)
-                    e?.logRootCauses("EditProfileActivity")
-
-                    if (imageLoadRetryCount < MAX_RETRY_COUNT) {
-                        imageLoadRetryCount++
-                        Log.d("EditProfileActivity", "Retrying image load (attempt $imageLoadRetryCount)")
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            loadProfileImage(url)
-                        }, 1000)
-                    } else {
-                        Log.e("EditProfileActivity", "Max retry attempts reached")
-                        showError("Unable to load profile image")
-                        imageLoadRetryCount = 0
-                    }
-                    return false
-                }
-
-                override fun onResourceReady(
-                    resource: Drawable,
-                    model: Any,
-                    target: Target<Drawable>,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    binding.progressBar.isVisible = false
-                    binding.profileImage.background = null
-                    imageLoadRetryCount = 0
-                    Log.d("EditProfileActivity", "Image loaded successfully from $dataSource")
-                    return false
-                }
-            })
-            .into(binding.profileImage)
-    }
-
-    private fun previewSelectedImage(uri: Uri) {
-        binding.progressBar.isVisible = true
-        binding.profileImage.background = null
-
+    // Tampilkan gambar
+    private fun displayImage(uri: Uri) {
+        Log.d("EditProfileActivity", "Displaying image: $uri")
         Glide.with(this)
             .load(uri)
+            .placeholder(R.drawable.baseline_image_24)
             .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .skipMemoryCache(true)
-            .circleCrop()
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    binding.progressBar.isVisible = false
-                    showError("Failed to load selected image")
-                    Log.e("EditProfileActivity", "Preview image load failed", e)
-                    return false
-                }
-
-                override fun onResourceReady(
-                    resource: Drawable,
-                    model: Any,
-                    target: Target<Drawable>,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    binding.progressBar.isVisible = false
-                    Log.d("EditProfileActivity", "Preview image loaded successfully")
-                    return false
-                }
-            })
             .into(binding.profileImage)
     }
 
@@ -351,44 +272,109 @@ class EditProfileActivity : AppCompatActivity() {
         return true
     }
 
-    private fun isValidImageUrl(url: String?): Boolean {
-        return !url.isNullOrEmpty() &&
-                (url.startsWith("http://") || url.startsWith("https://")) &&
-                url != "null"
-    }
-
-    private fun updateSaveButtonState() {
-        val username = binding.edtName.text.toString()
-        val isValidName = username.length >= 3
-        binding.btnSave.isEnabled = (isNameChanged && isValidName) || isImageChanged
-    }
-
-    private fun showLoading(isLoading: Boolean) {
-        binding.apply {
-            progressBar.isVisible = isLoading
-            btnSave.isEnabled = !isLoading
-            btnEditImage.isEnabled = !isLoading
-            edtName.isEnabled = !isLoading
-            loadingOverlay.isVisible = isLoading
-        }
-    }
-
-    private fun handleError(message: String) {
-        when {
-            message.contains("401") -> {
-                showError("Session expired. Please login again")
-                finish()
+    // Menghapus file cache gambar yang lama
+    private fun deleteCacheFile(uri: Uri? = null) {
+        try {
+            val cacheDir = cacheDir
+            if (uri != null) {
+                val file = File(cacheDir, uri.lastPathSegment ?: return)
+                if (file.exists() && file.delete()) {
+                    Log.i("Cache", "Deleted image file: ${file.absolutePath}")
+                } else {
+                    Log.w("Cache", "File not found or failed to delete: ${file.absolutePath}")
+                }
+            } else {
+                // Hapus semua cache file gambar
+                cacheDir.listFiles()?.forEach { file ->
+                    if (file.name.startsWith("image_cache_") && file.name.endsWith(".jpg")) {
+                        if (file.delete()) {
+                            Log.i("Cache", "Deleted cache file: ${file.absolutePath}")
+                        } else {
+                            Log.w("Cache", "Failed to delete cache file: ${file.absolutePath}")
+                        }
+                    }
+                }
             }
-            else -> showError(message)
+        } catch (e: Exception) {
+            Log.e("Cache", "Error deleting cache file: ${e.localizedMessage}")
         }
     }
 
-    private fun showError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    // Periksa apakah ada perubahan untuk mengaktifkan tombol simpan
+    private fun toggleSaveButton() {
+        val updatedUsername = binding.edtName.text.toString()
+        val updatedProfileUri = currentImageUri ?: Uri.parse(initialProfileUrl)
+        Log.d(
+            "EditProfileActivity",
+            "Checking save button state: $updatedUsername, $updatedProfileUri"
+        )
+
+        // Validasi nama pengguna
+        if (updatedUsername.isBlank()) {
+            binding.btnSave.isEnabled = false
+            Log.d("EditProfileActivity", "Save button disabled due to blank username.")
+            return
+        }
+
+        // Aktifkan tombol jika ada perubahan
+        val isSaveEnabled = updatedUsername != initialUsername || updatedProfileUri.toString() != initialProfileUrl
+        binding.btnSave.isEnabled = isSaveEnabled
+        Log.d("EditProfileActivity", "Save button enabled: $isSaveEnabled")
     }
+
+    // Create URI untuk menyimpan gambar di cache
+    private fun createCacheUri(originalUri: Uri? = null): Uri? {
+        return try {
+            val cacheDir = cacheDir
+            val file = File(cacheDir, "image_cache_${System.currentTimeMillis()}.jpg")
+
+            originalUri?.let {
+                val inputStream = contentResolver.openInputStream(it)
+                val outputStream = file.outputStream()
+                inputStream?.copyTo(outputStream)
+                outputStream.close()
+                inputStream?.close()
+            }
+
+            FileProvider.getUriForFile(
+                this,
+                "$packageName.provider",
+                file
+            )
+        } catch (e: Exception) {
+            Log.e("CreateCacheUri", "Failed to create cache file or URI: ${e.localizedMessage}")
+            null
+        }
+    }
+
+    // Launcher untuk mengambil gambar dari kamera
+    private val launcherCamera =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                currentImageUri?.let { uri ->
+                    displayImage(uri)
+                }
+            } else {
+                Log.e("EditProfileActivity", "Camera image capture failed.")
+            }
+        }
+
+    // Launcher untuk memilih gambar dari galeri (Android 13 ke atas)
+    private val launcherGallery =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            handleImageSelection(uri)
+        }
+
+    // Launcher untuk memilih gambar dari galeri (Android versi lebih lama)
+    private val pickImageLauncherLegacy =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            handleImageSelection(uri)
+        }
 
     override fun onDestroy() {
         super.onDestroy()
-        _binding = null
+        Log.d("EditProfileActivity", "Activity destroyed. Cleaning up cache files.")
+        deleteCacheFile()
     }
+
 }

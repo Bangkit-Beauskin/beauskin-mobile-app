@@ -11,14 +11,14 @@ data class ProfileResponse(
 
 data class ProfileData(
     @SerializedName("email") val email: String,
-    @SerializedName("username") val username: String,
-    @SerializedName("profile_url") val profileUrl: String?,
+    @SerializedName("username") val username: String?,
+    @SerializedName("profileUrl") val profileUrl: String?,
     @SerializedName("is_verified") val isVerified: Boolean
 )
 
 data class UpdateProfileRequest(
     @SerializedName("username") val username: String,
-    @SerializedName("profile_url") val profileUrl: String? = null
+    @SerializedName("profileUrl") val profileUrl: String? = null
 )
 
 data class UpdateProfileResponse(
@@ -29,5 +29,5 @@ data class UpdateProfileResponse(
 )
 
 data class ProfileUrlData(
-    @SerializedName("profile_url") val profileUrl: String?
+    @SerializedName("profileUrl") val profileUrl: String?
 )
