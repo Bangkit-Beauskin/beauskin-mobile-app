@@ -21,7 +21,7 @@ import com.dicoding.bangkitcapstone.auth.LoginActivity
 import com.dicoding.bangkitcapstone.chat.ChatActivity
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.profile.ProfileActivity
-import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment
+import com.dicoding.bangkitcapstone.scan.ScanActivity
 import com.dicoding.bangkitcapstone.scan.ScanViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
         mainViewModel.checkPermissionForScan(
             requiredCameraPermission = requiredCameraPermission,
             requiredMediaPermission = requiredMediaPermission,
-            onPermissionGranted = { showScanBottomSheet() },
+            onPermissionGranted = { activityScan() },
             onPermissionDenied = {
                 requestPermissionLauncher.launch(
                     arrayOf(requiredCameraPermission, requiredMediaPermission)
