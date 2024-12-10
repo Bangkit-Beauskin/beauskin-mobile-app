@@ -98,6 +98,7 @@
     <string name="try_scanning_again">Try Scanning \nAgain</string>
     <string name="try_our_chatbot">Try Our Chatbot</string>
     <string name="type_a_message">Type a message</string>
+    <string name="error_showing_scanner">error</string>
 
 
 </resources>
