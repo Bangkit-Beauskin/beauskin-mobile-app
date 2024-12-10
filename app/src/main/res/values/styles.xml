@@ -22,6 +22,11 @@
         <item name="android:textStyle">normal</item>
     </style>
 
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/dialog_fade_in</item>
+        <item name="android:windowExitAnimation">@anim/dialog_fade_out</item>
+    </style>
+
     <!-- Style for the "All" chip -->
     <style name="ChipStyle.All">
         <item name="chipStrokeColor">@android:color/transparent</item>
