@@ -3,10 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("org.jetbrains.kotlin.kapt")
     id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize")
 
     kotlin("plugin.serialization") version "2.0.21"
-
-    id("kotlin-parcelize")
 }
 
 android {
@@ -23,7 +22,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BASE_URL", "\"https://beauskin.et.r.appspot.com/\"")
         buildConfigField("String", "BASE_URL_SCAN", "\"https://model-api-612770994387.asia-southeast2.run.app/\"")
-        buildConfigField("String", "BASE_URL_CHAT", "\"https://model-api-612770994387.asia-southeast2.run.app/\"")
+        buildConfigField("String", "BASE_URL_CHAT", "\"https://notes-api-1067826268927.asia-southeast2.run.app/\"")
     }
 
     buildTypes {
@@ -91,18 +90,6 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
-    //Graph Navigasi
-
-
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.4")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.4")
-    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
-
-
-    // carousel slider
-    implementation("com.tbuonomo:dotsindicator:4.3")
-
-
     // Recycle view
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
@@ -116,6 +103,19 @@ dependencies {
 
     // Material Design components
     implementation("com.google.android.material:material:1.11.0")
+
+    //Graph Navigasi
+
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.4")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.4")
+    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
+
+    //paging
+    implementation ("androidx.paging:paging-runtime-ktx:3.2.1")
+
+    // carousel slider
+    implementation("com.tbuonomo:dotsindicator:4.3")
+
 
 }
 
