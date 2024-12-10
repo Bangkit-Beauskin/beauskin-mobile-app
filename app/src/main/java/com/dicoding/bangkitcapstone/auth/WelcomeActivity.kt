@@ -8,7 +8,7 @@ import com.dicoding.bangkitcapstone.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.dicoding.bangkitcapstone.data.local.TokenManager
-import com.dicoding.bangkitcapstone.utils.AuthAnimationUtils
+
 
 @AndroidEntryPoint
 class WelcomeActivity : AppCompatActivity() {

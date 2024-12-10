@@ -1,4 +1,4 @@
-package com.dicoding.bangkitcapstone.utils
+package com.dicoding.bangkitcapstone.auth
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
