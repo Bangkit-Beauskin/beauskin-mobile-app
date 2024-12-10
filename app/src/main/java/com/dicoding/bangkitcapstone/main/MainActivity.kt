@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity() {
 
             if (cameraPermissionGranted && mediaPermissionGranted) {
                 showScanBottomSheet()
-                Log.d(tag, "All permissions granted")
             } else {
                 showPermissionDialog() // Show permission dialog if permissions are denied
             }
@@ -76,6 +75,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (!tokenManager.isLoggedIn()) {
             Log.d("MainActivity", "User not logged in, redirecting to login")
@@ -133,20 +134,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.navigation_chat -> {
-                    try {
-                        startActivity(Intent(this@MainActivity, ChatActivity::class.java))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    startActivity(Intent(this, ChatActivity::class.java))
                     false
                 }
 
                 R.id.navigation_profile -> {
-                    try {
-                        startActivity(Intent(this@MainActivity, ProfileActivity::class.java))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                    startActivity(Intent(this, ProfileActivity::class.java))
                     false
                 }
 
@@ -174,18 +167,14 @@ class MainActivity : AppCompatActivity() {
     // Show the scan bottom sheet fragment
     private fun showScanBottomSheet() {
         if (!supportFragmentManager.isDestroyed) {
-            try {
-                ScanBottomSheetFragment().show(supportFragmentManager, "ScanBottomSheetFragment")
-            } catch (e: Exception) {
-                Log.e(tag, "Error showing ScanBottomSheet: ${e.message}", e)
-            }
-        } else {
-            Log.e(tag, "FragmentManager is destroyed, cannot show ScanBottomSheet")
+            ScanBottomSheetFragment().show(supportFragmentManager, "ScanBottomSheetFragment")
         }
     }
 
     // Show a dialog if the permission is denied, asking the user to enable permissions manually
     private fun showPermissionDialog() {
+        if (isDialogShown) return
+
         isDialogShown = true
         AlertDialog.Builder(this)
             .setMessage(getString(R.string.permission_rationale)) // Permission rationale message
@@ -200,7 +189,6 @@ class MainActivity : AppCompatActivity() {
             .setOnDismissListener {
                 isDialogShown = false // Reset dialog status when dismissed
             }
-            .create()
             .show()
     }
 
