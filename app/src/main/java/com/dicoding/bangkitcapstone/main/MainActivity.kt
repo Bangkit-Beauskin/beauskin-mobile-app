@@ -114,14 +114,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupDarkMode() {
-        val darkMode = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-            .getBoolean("dark_mode", false)
+        val prefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val darkMode = prefs.getBoolean("dark_mode", false)
 
-        if (darkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        }
+        AppCompatDelegate.setDefaultNightMode(
+            if (darkMode) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
     }
 
     private fun setupRecyclerView() {

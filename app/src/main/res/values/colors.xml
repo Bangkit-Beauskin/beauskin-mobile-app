@@ -11,5 +11,8 @@
     <color name="light_red">#FFBCBC</color>
     <color name="grey">#F3EEEA</color>
     <color name="main">#E9F2FB</color>
+    <color name="blue">#C4DFDF</color>
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#1E1E1E</color>
 
 </resources>
