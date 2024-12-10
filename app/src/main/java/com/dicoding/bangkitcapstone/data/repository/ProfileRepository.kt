@@ -5,7 +5,9 @@ import android.net.Uri
 import android.util.Log
 import com.dicoding.bangkitcapstone.data.api.ApiService
 import com.dicoding.bangkitcapstone.data.local.TokenManager
-import com.dicoding.bangkitcapstone.data.model.*
+import com.dicoding.bangkitcapstone.data.model.ProfileResponse
+import com.dicoding.bangkitcapstone.data.model.UpdateProfileRequest
+import com.dicoding.bangkitcapstone.data.model.UpdateProfileResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -51,47 +53,60 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun uploadProfilePhoto(photoUri: Uri, username: String): Result<UpdateProfileResponse> = withContext(Dispatchers.IO) {
-        try {
-            val file = File(context.cacheDir, "profile_photo_${System.currentTimeMillis()}.jpg")
-            Log.d("ProfileRepository", "Creating temp file for upload: ${file.absolutePath}")
-
-            context.contentResolver.openInputStream(photoUri)?.use { input ->
-                file.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-            val photoPart = MultipartBody.Part.createFormData("file", file.name, requestBody)
-            val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
-
-            val token = tokenManager.getSessionToken() ?: return@withContext Result.failure(Exception("No session token found"))
-
+    suspend fun uploadProfilePhoto(photoUri: Uri, username: String): Result<UpdateProfileResponse> =
+        withContext(Dispatchers.IO) {
             try {
-                Log.d("ProfileRepository", "Uploading profile photo...")
-                val response = apiService.uploadProfilePhoto("Bearer $token", photoPart, usernamePart)
 
-                if (response.isSuccessful && response.body() != null) {
-                    val result = response.body()!!
-                    Log.d("ProfileRepository", "Upload success. New profile URL: ${result.data?.profileUrl}")
-                    Result.success(result)
-                } else {
-                    Log.e("ProfileRepository", "Upload failed: ${response.code()}")
-                    Result.failure(Exception("Failed to upload photo: ${response.code()}"))
+                Log.d("ProfileRepository", "Using existing cached URI for upload: $photoUri")
+
+                val inputStream = context.contentResolver.openInputStream(photoUri)
+                    ?: return@withContext Result.failure(Exception("Unable to open input stream for URI: $photoUri"))
+
+                val file = File(context.cacheDir, "image_cache_${System.currentTimeMillis()}.jpg")
+                file.outputStream().use { output -> inputStream.copyTo(output) }
+
+
+                val requestBody = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                val photoPart = MultipartBody.Part.createFormData("file", file.name, requestBody)
+                val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val token = tokenManager.getSessionToken() ?: return@withContext Result.failure(
+                    Exception("No session token found")
+                )
+
+                try {
+                    Log.d("ProfileRepository", "Uploading profile photo... $photoPart")
+                    val response =
+                        apiService.uploadProfilePhoto("Bearer $token", photoPart, usernamePart)
+
+                    if (response.isSuccessful && response.body() != null) {
+                        val result = response.body()!!
+                        Log.d(
+                            "ProfileRepository",
+                            "Upload success. New profile URL: ${result.data?.profileUrl}"
+                        )
+                        Result.success(result)
+                    } else {
+                        Log.e("ProfileRepository", "Upload failed: ${response.code()}")
+                        Result.failure(Exception("Failed to upload photo: ${response.code()}"))
+                    }
+                } finally {
+                    file.delete()
                 }
-            } finally {
-                file.delete()
+            } catch (e: Exception) {
+                Log.e("ProfileRepository", "Upload exception", e)
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Log.e("ProfileRepository", "Upload exception", e)
-            Result.failure(e)
         }
-    }
 
-    suspend fun updateProfile(username: String, profileUrl: String?): Result<UpdateProfileResponse> = withContext(Dispatchers.IO) {
+    suspend fun updateProfile(
+        username: String,
+        profileUrl: String?
+    ): Result<UpdateProfileResponse> = withContext(Dispatchers.IO) {
         try {
-            val token = tokenManager.getSessionToken() ?: return@withContext Result.failure(Exception("No valid token"))
+            val token = tokenManager.getSessionToken() ?: return@withContext Result.failure(
+                Exception("No valid token")
+            )
 
             Log.d("ProfileRepository", "Updating profile - Username: $username, URL: $profileUrl")
 

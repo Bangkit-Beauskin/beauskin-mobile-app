@@ -27,8 +27,6 @@ class ProfileViewModel @Inject constructor(
     private val _updateState = MutableLiveData<UpdateProfileState>()
     val updateState: LiveData<UpdateProfileState> = _updateState
 
-    fun getCurrentUsername(): String = currentUsername
-
     fun fetchProfile() {
         viewModelScope.launch {
             _profileState.value = ProfileState.Loading
