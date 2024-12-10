@@ -17,11 +17,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.data.Result
-import com.dicoding.bangkitcapstone.data.model.AnnotatedImages
-import com.dicoding.bangkitcapstone.data.model.OriginalImages
-import com.dicoding.bangkitcapstone.data.model.Predictions
-import com.dicoding.bangkitcapstone.data.model.ScanResponse
-import com.dicoding.bangkitcapstone.data.model.SkinAnalysis
 import com.dicoding.bangkitcapstone.databinding.FragmentScanSkinType3Binding
 import com.dicoding.bangkitcapstone.utils.ImageHandler
 import com.dicoding.bangkitcapstone.utils.ImageHandler.deleteCacheFile
@@ -207,7 +202,6 @@ class FragmentScanSkinType3 : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Periksa jika gambar cache masih ada
         viewModel.leftImage.value?.let { uri ->
             if (!isFileValid(uri)) {
 
@@ -221,7 +215,6 @@ class FragmentScanSkinType3 : Fragment() {
         val frontImageUri = viewModel.frontImage.value
         val leftImageUri = viewModel.leftImage.value
         val rightImageUri = viewModel.rightImage.value
-
 
         Log.d("ImageValidation", "Checking if images are valid...")
         Log.d("ImageValidation", "frontImageUri: $frontImageUri")
@@ -245,7 +238,6 @@ class FragmentScanSkinType3 : Fragment() {
                 viewModel.uploadImages()
                 observeUploadimages()
 
-              // observedataTest()
             }
             .setNegativeButton(getString(R.string.no)) { dialog, _ ->
                 Log.d("UploadDialog", "User canceled upload, closing dialog.")
@@ -321,49 +313,6 @@ class FragmentScanSkinType3 : Fragment() {
         }
     }
 
-    private fun observedataTest() {
-        val dummyResponse = ScanResponse(
-            status = "success",
-            predictions = Predictions(
-                front = SkinAnalysis(
-                    acneCondition = "No acne",
-                    skinType = "oily",
-                    detectedAcneTypes = emptyList()
-                ),
-                left = SkinAnalysis(
-                    acneCondition = "Severe",
-                    skinType = "oily",
-                    detectedAcneTypes = listOf("dark spot")
-                ),
-                right = SkinAnalysis(
-                    acneCondition = "Severe",
-                    skinType = "normal",
-                    detectedAcneTypes = listOf("dark spot")
-                )
-            ),
-            originalImages = OriginalImages(
-                front = "/uploads/front/front_image.jpg",
-                left = "/uploads/left/left_image.jpg",
-                right = "/uploads/right/right_image.jpg"
-            ),
-            annotatedImages = AnnotatedImages(
-                front = "https://storage.googleapis.com/capstone-koong-test-bucket/front/annotated_front_image.jpg",
-                left = "https://storage.googleapis.com/capstone-koong-test-bucket/left/annotated_left_image.jpg",
-                right = "https://storage.googleapis.com/capstone-koong-test-bucket/right/annotated_right_image.jpg"
-            )
-        )
-
-        val bundle = Bundle().apply {
-            putParcelable("responseScan", dummyResponse)
-        }
-
-        findNavController().navigate(
-            R.id.action_fragmentScanSkinType3_to_fragmentResultImage,
-            bundle
-        )
-    }
-
-
     private fun handleMissingCache() {
         val frontImageUri = viewModel.frontImage.value
         val rightImageUri = viewModel.rightImage.value
@@ -405,7 +354,6 @@ class FragmentScanSkinType3 : Fragment() {
         binding.tvErrorMessage.visibility =
             View.GONE  // Hide the error message if everything is valid
     }
-
 
     private fun showErrorDialog() {
         val dialog = android.app.AlertDialog.Builder(requireContext())

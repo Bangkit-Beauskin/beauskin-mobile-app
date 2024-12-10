@@ -65,7 +65,7 @@
 
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView"
-            app:srcCompat="@drawable/baseline_image_24"
+            app:srcCompat="@drawable/front_img_sample"
             tools:ignore="ContentDescription" />
 
 
