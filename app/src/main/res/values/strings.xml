@@ -23,6 +23,13 @@
     <string name="grant">Grant</string>
     <string name="cancel">Cancel</string>
 
+    <!-- Item types -->
+    <string name="type_news">News</string>
+    <string name="type_video">Video</string>
+    <string name="type_normal_skin">Normal Skin</string>
+    <string name="type_oily_skin">Oily Skin</string>
+    <string name="type_dry_skin">Dry Skin</string>
+
     <string name="Desc_scan_your_Skin">Scan your skin type and acne problems</string>
     <string name="capture">Capture</string>
     <string name="upload_imagestext">Upload Image</string>

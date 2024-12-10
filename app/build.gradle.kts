@@ -104,8 +104,10 @@ dependencies {
     //Graph Navigasi
     implementation ("androidx.navigation:navigation-ui-ktx:2.8.4")
     implementation ("androidx.navigation:navigation-fragment-ktx:2.8.4")
-    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
+    implementation ("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
 
+    //paging
+    implementation ("androidx.paging:paging-runtime-ktx:3.2.1")
 
 
 }

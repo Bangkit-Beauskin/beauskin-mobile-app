@@ -20,6 +20,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
     @POST("api/v1/auths/login")
@@ -61,6 +62,13 @@ interface ApiService {
     @GET("api/v1/products")
     suspend fun getProducts(
         @Header("Authorization") token: String
+    ): Response<ProductResponse>
+
+    @GET("api/v1/products")
+    suspend fun getPagedProducts(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int,
+        @Query("size") size: Int
     ): Response<ProductResponse>
 
     @GET("api/v1/products/{id}")

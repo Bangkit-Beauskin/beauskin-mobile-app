@@ -3,6 +3,9 @@
     <style name="CircularImageView">
         <item name="cornerSize">50%</item>
     </style>
+    <style name="RoundedImageView">
+        <item name="cornerSize">8dp</item>
+    </style>
 
     <!-- Base ChipStyle -->
     <style name="ChipStyle">
@@ -22,7 +25,7 @@
     <!-- Style for the "All" chip -->
     <style name="ChipStyle.All">
         <item name="chipStrokeColor">@android:color/transparent</item>
-        <item name="chipBackgroundColor">@color/white</item>
+        <item name="chipBackgroundColor">@color/grey</item>
         <item name="android:textColor">@color/black</item>
     </style>
 
@@ -40,6 +43,18 @@
 
     <style name="ChipStyle.Normal">
         <item name="chipBackgroundColor">@color/light_green</item>
+        <item name="chipStrokeColor">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="ChipStyle.News">
+        <item name="chipBackgroundColor">@color/light_purple</item>
+        <item name="chipStrokeColor">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="ChipStyle.Video">
+        <item name="chipBackgroundColor">@color/light_red</item>
         <item name="chipStrokeColor">@color/white</item>
         <item name="android:textColor">@color/black</item>
     </style>
