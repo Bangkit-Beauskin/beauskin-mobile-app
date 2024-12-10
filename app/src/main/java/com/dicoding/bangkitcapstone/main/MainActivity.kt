@@ -36,7 +36,7 @@ import com.dicoding.bangkitcapstone.databinding.ActivityMainBinding
 import com.dicoding.bangkitcapstone.detail.NewsDetailActivity
 import com.dicoding.bangkitcapstone.detail.ProductDetailActivity
 import com.dicoding.bangkitcapstone.profile.ProfileActivity
-import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment
+import com.dicoding.bangkitcapstone.scan.ScanActivity
 import com.dicoding.bangkitcapstone.scan.ScanViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             val mediaPermissionGranted = permissions[requiredMediaPermission] == true
 
             if (cameraPermissionGranted && mediaPermissionGranted) {
-                showScanBottomSheet()
+                activityScan()
                 Log.d(tag, "All permissions granted")
             } else {
                 showPermissionDialog()
@@ -282,7 +282,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.checkPermissionForScan(
             requiredCameraPermission = requiredCameraPermission,
             requiredMediaPermission = requiredMediaPermission,
-            onPermissionGranted = { showScanBottomSheet() },
+            onPermissionGranted = { activityScan() },
             onPermissionDenied = {
                 requestPermissionLauncher.launch(
                     arrayOf(requiredCameraPermission, requiredMediaPermission)
@@ -291,15 +291,8 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun showScanBottomSheet() {
-        if (!supportFragmentManager.isDestroyed) {
-            try {
-                ScanBottomSheetFragment().show(supportFragmentManager, "ScanBottomSheetFragment")
-            } catch (e: Exception) {
-                Log.e(tag, "Error showing scan bottom sheet: ${e.message}", e)
-                showError(getString(R.string.error_showing_scanner))
-            }
-        }
+    private fun activityScan() {
+        startActivity(Intent(this, ScanActivity::class.java))
     }
 
     private fun showPermissionDialog() {
