@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.databinding.ActivitySigninBinding
-import com.dicoding.bangkitcapstone.utils.AuthAnimationUtils
+
 import dagger.hilt.android.AndroidEntryPoint
 
 
