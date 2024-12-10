@@ -1,66 +1,110 @@
 package com.dicoding.bangkitcapstone.profile
 
-import android.content.Context
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.widget.ImageButton
+import android.view.Gravity
+import android.view.ViewGroup
+import android.view.Window
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.dicoding.bangkitcapstone.R
-import com.dicoding.bangkitcapstone.auth.LoginActivity
-import com.dicoding.bangkitcapstone.data.local.TokenManager
-import com.dicoding.bangkitcapstone.data.repository.AuthRepository
-import com.google.android.material.card.MaterialCardView
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.dicoding.bangkitcapstone.auth.WelcomeActivity
+import com.dicoding.bangkitcapstone.databinding.ActivitySettingBinding
+import com.dicoding.bangkitcapstone.databinding.DialogLogoutBinding
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var tokenManager: TokenManager
-
-    @Inject
-    lateinit var authRepository: AuthRepository
+    private lateinit var binding: ActivitySettingBinding
+    private val viewModel: SettingViewModel by viewModels()
+    private var logoutDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_setting)
+        binding = ActivitySettingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val switchDarkMode = findViewById<SwitchMaterial>(R.id.switchDarkMode)
-        val sharedPrefs = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        setupViews()
+    }
 
-        switchDarkMode.isChecked = sharedPrefs.getBoolean("dark_mode", false)
+    private fun setupViews() {
+        // Initialize dark mode switch
+        binding.switchDarkMode.isChecked = viewModel.isDarkModeEnabled()
 
-        findViewById<ImageButton>(R.id.btnBack).setOnClickListener {
+        // Setup click listeners
+        binding.btnBack.setOnClickListener {
             onBackPressed()
         }
 
-        findViewById<MaterialCardView>(R.id.logoutCard).setOnClickListener {
-            logout()
+        binding.logoutCard.setOnClickListener {
+            showLogoutDialog()
         }
 
-        switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            sharedPrefs.edit().putBoolean("dark_mode", isChecked).apply()
-
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
-
-            recreate()
+        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setDarkMode(isChecked)
+            updateDarkMode(isChecked)
         }
     }
 
-    private fun logout() {
-        authRepository.clearAuth()
-        tokenManager.clearTokens()
+    private fun showLogoutDialog() {
+        logoutDialog = Dialog(this).apply {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        startActivity(Intent(this, LoginActivity::class.java).apply {
+            val binding = DialogLogoutBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+
+            window?.apply {
+                setLayout(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+
+                setGravity(Gravity.CENTER)
+                setWindowAnimations(R.style.DialogAnimation)
+            }
+
+            binding.btnNo.setOnClickListener {
+                dismiss()
+            }
+
+            binding.btnYes.setOnClickListener {
+                viewModel.logout()
+                navigateToWelcome()
+                dismiss()
+            }
+
+            setOnDismissListener {
+                logoutDialog = null
+            }
+
+            show()
+        }
+    }
+
+    private fun updateDarkMode(isDarkMode: Boolean) {
+        AppCompatDelegate.setDefaultNightMode(
+            if (isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
+        recreate()
+    }
+
+    private fun navigateToWelcome() {
+        startActivity(Intent(this, WelcomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         })
         finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        logoutDialog?.dismiss()
+        logoutDialog = null
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Bangkit[Capstone]</string>
+    <string name="app_name">Beauskin</string>
     <string name="otp_verification_instruction">Enter the 6-digit code sent to your email</string>
     <string name="resend_otp">Resend OTP</string>
     <string name="resend_otp_countdown">Resend OTP (%d)</string>
@@ -22,6 +22,13 @@
     <string name="permission_granted">Permission Granted</string>
     <string name="grant">Grant</string>
     <string name="cancel">Cancel</string>
+
+    <!-- Item types -->
+    <string name="type_news">News</string>
+    <string name="type_video">Video</string>
+    <string name="type_normal_skin">Normal Skin</string>
+    <string name="type_oily_skin">Oily Skin</string>
+    <string name="type_dry_skin">Dry Skin</string>
 
     <string name="Desc_scan_your_Skin">Scan your skin type and acne problems</string>
     <string name="capture">Capture</string>
@@ -91,6 +98,7 @@
     <string name="try_scanning_again">Try Scanning \nAgain</string>
     <string name="try_our_chatbot">Try Our Chatbot</string>
     <string name="type_a_message">Type a message</string>
+    <string name="error_showing_scanner">error</string>
 
 
 </resources>

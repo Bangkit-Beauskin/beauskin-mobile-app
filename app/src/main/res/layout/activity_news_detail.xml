@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -37,19 +38,75 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btnBack"/>
 
+            <!-- Changed to use aspect ratio constraint -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/imageContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/newsTitle">
+
+                <ImageView
+                    android:id="@+id/newsImage"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintDimensionRatio="H,16:9"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:contentDescription="News Image"/>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <TextView
                 android:id="@+id/newsContent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
                 android:lineSpacingMultiplier="1.2"
                 android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/newsTitle"
-                app:layout_constraintVertical_bias="0"/>
+                app:layout_constraintTop_toBottomOf="@id/imageContainer"/>
+
+            <TextView
+                android:id="@+id/sourceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Source: "
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/newsContent"/>
+
+            <TextView
+                android:id="@+id/sourceUrl"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:textSize="14sp"
+                android:textColor="@color/navy_blue"
+                android:autoLink="web"
+                android:linksClickable="true"
+                app:layout_constraintStart_toEndOf="@id/sourceLabel"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/sourceLabel"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
