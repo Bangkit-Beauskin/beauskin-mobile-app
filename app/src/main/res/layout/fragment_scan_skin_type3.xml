@@ -25,13 +25,14 @@
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_bold"
             android:text="@string/scan_your_skin_type"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:fontFamily="@font/poppins_bold"
 
             app:layout_constraintBottom_toBottomOf="@id/btnBack"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.55"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/btnBack" />
 
@@ -90,7 +91,7 @@
             android:layout_width="340dp"
             android:layout_height="300dp"
             android:layout_margin="14dp"
-            app:cardBackgroundColor="#F9F3CC"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="15dp"
             app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -104,7 +105,7 @@
                 android:padding="12dp">
 
                 <ImageView
-                    android:id="@+id/iv_upload_Front"
+                    android:id="@+id/iv_upload"
                     android:layout_width="186dp"
                     android:layout_height="169dp"
 
@@ -133,11 +134,11 @@
                     app:drawableStartCompat="@drawable/f7_exclamationmark_circle"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/iv_upload_Front"
+                    app:layout_constraintTop_toBottomOf="@+id/iv_upload"
                     tools:layout_editor_absoluteY="17dp" />
 
                 <ImageButton
-                    android:id="@+id/Capture_camera_btn1"
+                    android:id="@+id/Capture_camera_btn3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="76dp"
@@ -162,10 +163,10 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.148"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/Capture_camera_btn1" />
+                    app:layout_constraintTop_toBottomOf="@+id/Capture_camera_btn3" />
 
                 <ImageButton
-                    android:id="@+id/Grab_gallerie_btn1"
+                    android:id="@+id/Grab_gallerie_btn3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
@@ -190,7 +191,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.818"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/Grab_gallerie_btn1"
+                    app:layout_constraintTop_toBottomOf="@+id/Grab_gallerie_btn3"
                     app:layout_constraintVertical_bias="0.0" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -201,8 +202,8 @@
             android:id="@+id/btnUpload_Api"
             android:layout_width="320dp"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:layout_marginTop="32dp"
+            android:layout_margin="10dp"
+
             android:backgroundTint="@color/navy_blue"
             android:fontFamily="@font/poppins_regular"
             android:minHeight="48dp"
@@ -213,7 +214,7 @@
             android:textSize="15sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progressBar4" />
+            app:layout_constraintTop_toBottomOf="@+id/tvErrorMessage" />
 
         <ProgressBar
             android:id="@+id/progressBar4"
@@ -225,6 +226,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/Card_view2" />
+
+        <TextView
+            android:id="@+id/tvErrorMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/poppins_regular"
+            android:textColor="#ff0000"
+            android:text="@string/error_no_image_selected"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/progressBar4" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,6 +21,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BASE_URL", "\"https://copycatcapstone.et.r.appspot.com/\"")
+        buildConfigField("String", "BASE_URL_SCAN", "\"https://36cwrqb8-8001.asse.devtunnels.ms/\"")
+        buildConfigField("String", "BASE_URL_CHAT", "\"https://notes-api-1067826268927.asia-southeast2.run.app/\"")
     }
 
     buildTypes {
@@ -104,10 +106,13 @@ dependencies {
     //Graph Navigasi
     implementation ("androidx.navigation:navigation-ui-ktx:2.8.4")
     implementation ("androidx.navigation:navigation-fragment-ktx:2.8.4")
-    implementation ("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
+    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.4")
 
     //paging
     implementation ("androidx.paging:paging-runtime-ktx:3.2.1")
+
+    // carousel slider
+    implementation("com.tbuonomo:dotsindicator:4.3")
 
 
 }

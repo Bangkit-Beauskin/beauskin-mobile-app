@@ -23,6 +23,11 @@
             app:destination="@id/fragmentScanSkinType2"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out" />
+        <action
+            android:id="@+id/action_fragmentScanskintype_to_fragmentInformationScan"
+            app:destination="@id/fragmentInformationScan"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
     </fragment>
     <fragment
         android:id="@+id/fragmentScanSkinType2"
@@ -33,9 +38,29 @@
             app:destination="@id/fragmentScanSkinType3"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out" />
+        <action
+            android:id="@+id/action_fragmentScanSkinType2_to_fragmentInformationScan"
+            app:destination="@id/fragmentInformationScan"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
     </fragment>
     <fragment
         android:id="@+id/fragmentScanSkinType3"
         android:name="com.dicoding.bangkitcapstone.scan.FragmentScanSkinType3"
-        android:label="FragmentScanSkinType3" />
+        android:label="FragmentScanSkinType3" >
+        <action
+            android:id="@+id/action_fragmentScanSkinType3_to_fragmentInformationScan"
+            app:destination="@id/fragmentInformationScan"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+        <action
+            android:id="@+id/action_fragmentScanSkinType3_to_fragmentResultImage"
+            app:destination="@id/fragmentResultImage"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentResultImage"
+        android:name="com.dicoding.bangkitcapstone.scan.FragmentResultImage"
+        android:label="FragmentResultImage" />
 </navigation>

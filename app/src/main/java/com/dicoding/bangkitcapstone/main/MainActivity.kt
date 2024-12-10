@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +20,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
@@ -35,9 +37,12 @@ import com.dicoding.bangkitcapstone.detail.NewsDetailActivity
 import com.dicoding.bangkitcapstone.detail.ProductDetailActivity
 import com.dicoding.bangkitcapstone.profile.ProfileActivity
 import com.dicoding.bangkitcapstone.scan.ScanBottomSheetFragment
+import com.dicoding.bangkitcapstone.scan.ScanViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,7 +54,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
     private lateinit var pagingAdapter: ProductPagingAdapter
+    private lateinit var scanViewModel: ScanViewModel
     private var isDialogShown = false
+    private val tag = "MainActivity"
 
     // Required permissions
     private val requiredCameraPermission = Manifest.permission.CAMERA
@@ -67,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
             if (cameraPermissionGranted && mediaPermissionGranted) {
                 showScanBottomSheet()
+                Log.d(tag, "All permissions granted")
             } else {
                 showPermissionDialog()
             }
@@ -83,11 +91,37 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        scanViewModel = ViewModelProvider(this)[ScanViewModel::class.java]
+
+        if (savedInstanceState != null) {
+            isDialogShown = savedInstanceState.getBoolean("isDialogShown", false)
+            if (isDialogShown) {
+                showPermissionDialog()
+            }
+        }
+
         setupDarkMode()
         setupRecyclerView()
         setupViews()
         setupBottomNavigation()
         observeData()
+        deleteCacheFile()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("isDialogShown", isDialogShown)
+    }
+
+    private fun setupDarkMode() {
+        val darkMode = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+            .getBoolean("dark_mode", false)
+
+        if (darkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -138,11 +172,42 @@ class MainActivity : AppCompatActivity() {
                     outRect.set(4, 4, 4, 4)
                 }
             })
+
+            // Improve scroll performance
+            itemAnimator = null
+        }
+    }
+
+    private fun setupViews() {
+        binding.apply {
+            ViewCompat.setOnApplyWindowInsetsListener(root) { view, windowInsets ->
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.setPadding(insets.left, 0, insets.right, insets.bottom)
+                windowInsets
+            }
+
+            swipeRefresh.setOnRefreshListener {
+                pagingAdapter.refresh()
+            }
+
+            chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+                val checkedChipId = checkedIds.firstOrNull()
+                when (checkedChipId) {
+                    R.id.chipAll -> viewModel.clearFilters()
+                    R.id.chipDry -> viewModel.setSkinType("dry")
+                    R.id.chipOily -> viewModel.setSkinType("oily")
+                    R.id.chipNormal -> viewModel.setSkinType("normal")
+                    R.id.chipNews -> viewModel.setContentType("news")
+                    R.id.chipVideo -> viewModel.setContentType("video")
+                    null -> viewModel.clearFilters()
+                }
+            }
+
+            chipGroup.check(R.id.chipAll)
         }
     }
 
     private fun observeData() {
-        // Collect load states
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 pagingAdapter.loadStateFlow.collect { loadStates ->
@@ -170,56 +235,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Collect paging data
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.items.collect { pagingData ->
+                viewModel.items.collectLatest { pagingData ->
                     pagingAdapter.submitData(pagingData)
                 }
             }
-        }
-    }
-
-    private fun setupViews() {
-        binding.apply {
-            ViewCompat.setOnApplyWindowInsetsListener(root) { view, windowInsets ->
-                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.setPadding(insets.left, 0, insets.right, insets.bottom)
-                windowInsets
-            }
-
-            swipeRefresh.setOnRefreshListener {
-                pagingAdapter.refresh()
-            }
-
-            chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
-                val checkedChipId = checkedIds.firstOrNull()
-                when (checkedChipId) {
-                    R.id.chipAll -> viewModel.clearFilters()
-                    // Skin type filters
-                    R.id.chipDry -> viewModel.setSkinType("dry")
-                    R.id.chipOily -> viewModel.setSkinType("oily")
-                    R.id.chipNormal -> viewModel.setSkinType("normal")
-                    // Content type filters
-                    R.id.chipNews -> viewModel.setContentType("news")
-                    R.id.chipVideo -> viewModel.setContentType("video")
-                    null -> viewModel.clearFilters()
-                }
-            }
-
-            // Set initial state
-            chipGroup.check(R.id.chipAll)
-        }
-    }
-
-    private fun setupDarkMode() {
-        val darkMode = getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-            .getBoolean("dark_mode", false)
-
-        if (darkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
     }
 
@@ -228,15 +249,27 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.navigation_home -> true
                 R.id.navigation_scan -> {
-                    checkPermissionForScan()
+                    try {
+                        checkPermissionForScan()
+                    } catch (e: Exception) {
+                        Log.e(tag, "Error checking scan permissions: ${e.message}", e)
+                    }
                     false
                 }
                 R.id.navigation_chat -> {
-                    startActivity(Intent(this, ChatActivity::class.java))
+                    try {
+                        startActivity(Intent(this, ChatActivity::class.java))
+                    } catch (e: Exception) {
+                        Log.e(tag, "Error starting chat activity: ${e.message}", e)
+                    }
                     false
                 }
                 R.id.navigation_profile -> {
-                    startActivity(Intent(this, ProfileActivity::class.java))
+                    try {
+                        startActivity(Intent(this, ProfileActivity::class.java))
+                    } catch (e: Exception) {
+                        Log.e(tag, "Error starting profile activity: ${e.message}", e)
+                    }
                     false
                 }
                 else -> false
@@ -261,7 +294,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showScanBottomSheet() {
         if (!supportFragmentManager.isDestroyed) {
-            ScanBottomSheetFragment().show(supportFragmentManager, "ScanBottomSheetFragment")
+            try {
+                ScanBottomSheetFragment().show(supportFragmentManager, "ScanBottomSheetFragment")
+            } catch (e: Exception) {
+                Log.e(tag, "Error showing scan bottom sheet: ${e.message}", e)
+                showError(getString(R.string.error_showing_scanner))
+            }
         }
     }
 
@@ -298,5 +336,62 @@ class MainActivity : AppCompatActivity() {
 
     private fun showError(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
+    private fun isFileValid(uri: Uri?): Boolean {
+        if (uri == null) return false
+        val file = File(cacheDir, uri.lastPathSegment ?: return false)
+        return file.exists()
+    }
+
+    private fun deleteCacheFile(uri: Uri? = null) {
+        Log.d(tag, "Deleting cache file: $uri")
+        try {
+            val cacheDir = cacheDir
+            if (uri != null) {
+                val file = File(cacheDir, uri.lastPathSegment ?: return)
+                if (file.exists() && file.delete()) {
+                    Log.d(tag, "Deleted cache file: ${file.absolutePath}")
+                }
+            } else {
+                cacheDir.listFiles()?.forEach { file ->
+                    if (file.name.startsWith("image_cache_") && file.name.endsWith(".jpg")) {
+                        if (file.delete()) {
+                            Log.d(tag, "Deleted cache file: ${file.absolutePath}")
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error deleting cache file: ${e.message}", e)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!isAuthenticated()) {
+            navigateToLogin()
+            return
+        }
+
+        // Clean up scan image cache files
+        scanViewModel.apply {
+            frontImage.value?.let { uri ->
+                if (isFileValid(uri)) deleteCacheFile(uri)
+            }
+            leftImage.value?.let { uri ->
+                if (isFileValid(uri)) deleteCacheFile(uri)
+            }
+            rightImage.value?.let { uri ->
+                if (isFileValid(uri)) deleteCacheFile(uri)
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (!isAuthenticated()) {
+            tokenManager.clearTokens()
+        }
     }
 }

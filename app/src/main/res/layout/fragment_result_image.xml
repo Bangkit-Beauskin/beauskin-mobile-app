@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- ConstraintLayout with Back Button and Title -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"
+                android:src="@drawable/baseline_arrow_back_24"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_bold"
+                android:text="@string/analysis_result"
+                android:textSize="24sp"
+                android:textStyle="bold"
+
+                app:layout_constraintBottom_toBottomOf="@id/btnBack"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/btnBack"
+                app:layout_constraintVertical_bias="0.2" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="32dp" />
+
+
+        <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+            android:id="@+id/dotsIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="center_horizontal"
+            app:dotsColor="@color/navy_blue"
+            app:dotsSize="12dp"/>
+
+        <TextView
+            android:id="@+id/tvSwipeHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Swipe Result to View More"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal" />
+
+
+        <!-- Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNextAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="32dp"
+
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="@color/navy_blue"
+            android:text="@string/get_recommendation"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+</ScrollView>

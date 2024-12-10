@@ -32,34 +32,56 @@ class FragmentInformationScan : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btnBack.setOnClickListener {
-            viewModel.frontImage.value?.let { deleteCacheFile(it) }
-            val intent = Intent(requireContext(), MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-
-            val options = android.app.ActivityOptions.makeCustomAnimation(
-                requireContext(),
-                android.R.anim.fade_in,
-                android.R.anim.fade_out
-            )
-            Log.d("FragmentInformationScan", "Navigating Back to MainActivity")
-            startActivity(intent, options.toBundle())
-            requireActivity().finishAffinity()
+        // Handle tombol back pada fragment
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            navigateToMainActivity()
         }
 
+        // Handle tombol back dari UI
+        binding.btnBack.setOnClickListener {
+            viewModel.frontImage.value?.let { deleteCacheFile(it) }
+            viewModel.rightImage.value?.let { deleteCacheFile(it) }
+            viewModel.leftImage.value?.let { deleteCacheFile(it) }
+            navigateToMainActivity()
+        }
         binding.btnNextScan1.setOnClickListener {
             Log.d("FragmentInformationScan", "Navigating to fragmentScanSkintType")
             findNavController().navigate(R.id.action_fragmentInformationScan_to_fragmentScanskintype4)
         }
 
     }
+
+    private fun navigateToMainActivity() {
+        val intent = Intent(requireContext(), MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+
+        val options = android.app.ActivityOptions.makeCustomAnimation(
+            requireContext(),
+            android.R.anim.fade_in,
+            android.R.anim.fade_out
+        )
+
+        Log.d("FragmentInformationScan", "Navigating Back to MainActivity")
+        startActivity(intent, options.toBundle())
+        requireActivity().finishAffinity()
+    }
+
     override fun onResume() {
         super.onResume()
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            // Hapus cache sebelum menutup fragment
+
+            Log.d("onResume", "frontImage: ${viewModel.frontImage.value}")
+            Log.d("onResume", "rightImage: ${viewModel.rightImage.value}")
+            Log.d("onResume", "leftImage: ${viewModel.leftImage.value}")
+
             viewModel.frontImage.value?.let { deleteCacheFile(it) }
+            viewModel.rightImage.value?.let { deleteCacheFile(it) }
+            viewModel.leftImage.value?.let { deleteCacheFile(it) }
+
             requireActivity().finish()
         }
+
     }
 
     private fun deleteCacheFile(uri: Uri? = null) {
