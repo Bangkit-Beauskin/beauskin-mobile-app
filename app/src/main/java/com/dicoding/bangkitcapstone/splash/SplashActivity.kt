@@ -6,7 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.dicoding.bangkitcapstone.R
-import com.dicoding.bangkitcapstone.auth.LoginActivity
+import com.dicoding.bangkitcapstone.auth.WelcomeActivity
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -29,7 +29,7 @@ class SplashActivity : AppCompatActivity() {
             val intent = if (tokenManager.isLoggedIn()) {
                 Intent(this, MainActivity::class.java)
             } else {
-                Intent(this, LoginActivity::class.java)
+                Intent(this, WelcomeActivity::class.java)
             }
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)

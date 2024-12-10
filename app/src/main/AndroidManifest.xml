@@ -32,6 +32,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <activity
+            android:name=".auth.WelcomeActivity"
+            android:exported="false"/>
+        <activity
             android:name=".auth.SignInActivity"
             android:exported="false"/>
         <activity

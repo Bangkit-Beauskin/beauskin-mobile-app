@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.databinding.ActivityLoginBinding
+import com.dicoding.bangkitcapstone.utils.AuthAnimationUtils
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,6 +22,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        AuthAnimationUtils.playLoginAnimation(binding)
 
         setupViews()
         observeViewModel()
