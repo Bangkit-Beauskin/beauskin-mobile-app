@@ -75,7 +75,7 @@
             android:hint="@string/type_a_message"
             android:inputType="textMultiLine"
             android:padding="6dp"
-
+            android:textColor="@color/black"
             android:textColorHint="#757575"
             tools:ignore="Autofill" />
 
