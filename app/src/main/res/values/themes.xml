@@ -2,7 +2,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.BangkitCapstone" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+         <item name="colorPrimary">@color/navy_blue</item>
+        <item name="android:colorBackground">@color/white</item>
+        <item name="colorSurface">@color/white</item>
     </style>
 
     <style name="Theme.BangkitCapstone" parent="Base.Theme.BangkitCapstone" />
