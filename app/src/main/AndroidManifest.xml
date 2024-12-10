@@ -73,10 +73,6 @@
             android:exported="false"/>
 
         <activity
-            android:name=".profile.HistoryActivity"
-            android:exported="false"/>
-
-        <activity
             android:name=".splash.SplashActivity"
             android:exported="true">
             <intent-filter>
