@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.dicoding.bangkitcapstone.R
 import com.dicoding.bangkitcapstone.auth.LoginActivity
+import com.dicoding.bangkitcapstone.auth.WelcomeActivity
 import com.dicoding.bangkitcapstone.data.local.TokenManager
 import com.dicoding.bangkitcapstone.data.repository.AuthRepository
 import com.google.android.material.card.MaterialCardView
@@ -58,7 +59,7 @@ class SettingActivity : AppCompatActivity() {
         authRepository.clearAuth()
         tokenManager.clearTokens()
 
-        startActivity(Intent(this, LoginActivity::class.java).apply {
+        startActivity(Intent(this, WelcomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         })
         finish()

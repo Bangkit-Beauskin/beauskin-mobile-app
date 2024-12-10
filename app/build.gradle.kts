@@ -20,8 +20,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "BASE_URL", "\"https://copycatcapstone.et.r.appspot.com/\"")
-        buildConfigField("String", "BASE_URL_SCAN", "\"https://36cwrqb8-8001.asse.devtunnels.ms/\"")
+        buildConfigField("String", "BASE_URL", "\"https://beauskin.et.r.appspot.com/\"")
+        buildConfigField("String", "BASE_URL_SCAN", "\"https://model-api-612770994387.asia-southeast2.run.app/\"")
         buildConfigField("String", "BASE_URL_CHAT", "\"https://notes-api-1067826268927.asia-southeast2.run.app/\"")
     }
 
