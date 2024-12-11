@@ -24,6 +24,7 @@
                 android:layout_margin="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="8dp"
+                app:tint="?attr/colorPrimary"
                 android:src="@drawable/baseline_arrow_back_24"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

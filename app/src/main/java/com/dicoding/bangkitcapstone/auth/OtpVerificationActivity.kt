@@ -93,7 +93,17 @@ class OtpVerificationActivity : AppCompatActivity() {
                 }
                 is OtpState.Error -> {
                     showLoading(false)
-                    showError(state.message)
+                    val userFriendlyMessage = when {
+                        state.message.contains("401") ->
+                            "Invalid verification code. Please check and try again"
+                        state.message.contains("expired") ->
+                            "Verification code has expired. Please request a new one"
+                        state.message.contains("network") ||
+                                state.message.contains("connection") ->
+                            "Unable to verify. Please check your internet connection"
+                        else -> "Unable to verify code. Please try again"
+                    }
+                    showError(userFriendlyMessage)
                 }
             }
         }
@@ -101,24 +111,46 @@ class OtpVerificationActivity : AppCompatActivity() {
         viewModel.resendState.observe(this) { state ->
             when (state) {
                 is AuthState.Loading -> binding.btnResendOtp.isEnabled = false
-                is AuthState.Success -> Toast.makeText(this, getString(R.string.otp_resent_success), Toast.LENGTH_SHORT).show()
+                is AuthState.Success -> {
+                    Toast.makeText(
+                        this,
+                        "New verification code sent to your email",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
                 is AuthState.Error -> {
                     binding.btnResendOtp.isEnabled = true
-                    showError(state.message)
+                    val userFriendlyMessage = when {
+                        state.message.contains("network") ||
+                                state.message.contains("connection") ->
+                            "Unable to send code. Please check your internet connection"
+                        state.message.contains("too many") ||
+                                state.message.contains("limit") ->
+                            "Too many attempts. Please try again later"
+                        else -> "Unable to send new code. Please try again later"
+                    }
+                    showError(userFriendlyMessage)
                 }
             }
         }
     }
 
     private fun handleOtpSuccess(response: OtpResponse) {
-        if (response.message.equals("User verified", ignoreCase = true)) {
+        if (response.success) {
             getSharedPreferences("auth", MODE_PRIVATE).let { prefs ->
                 prefs.getString("token", null)?.let { tokenManager.saveSessionToken(it) }
                 prefs.edit().putBoolean("is_verified", true).apply()
             }
             navigateToMain()
         } else {
-            showError(response.message)
+            val userFriendlyMessage = when {
+                response.message.contains("invalid", ignoreCase = true) ->
+                    "Incorrect verification code. Please try again"
+                response.message.contains("expired", ignoreCase = true) ->
+                    "Code has expired. Please request a new one"
+                else -> "Verification failed. Please try again"
+            }
+            showError(userFriendlyMessage)
         }
     }
 
@@ -148,12 +180,22 @@ class OtpVerificationActivity : AppCompatActivity() {
         }.start()
     }
 
-    private fun validateOtp(otp: String) = when {
-        otp.length != 6 -> {
-            showError(getString(R.string.invalid_otp_error))
-            false
+    private fun validateOtp(otp: String): Boolean {
+        return when {
+            otp.isEmpty() -> {
+                showError("Please enter the verification code sent to your email")
+                false
+            }
+            otp.length != 6 -> {
+                showError("Please enter all 6 digits of the verification code")
+                false
+            }
+            !otp.all { it.isDigit() } -> {
+                showError("Verification code should only contain numbers")
+                false
+            }
+            else -> true
         }
-        else -> true
     }
 
     private fun showLoading(isLoading: Boolean) {

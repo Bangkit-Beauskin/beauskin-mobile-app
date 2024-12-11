@@ -69,14 +69,83 @@ class SignInActivity : AppCompatActivity() {
                 is AuthState.Loading -> showLoading(true)
                 is AuthState.Success -> {
                     showLoading(false)
-                    navigateToOtpVerification()
+
+                    val response = state.response
+                    if (response.data?.tokenInfo?.access != null) {
+                        getSharedPreferences("auth", MODE_PRIVATE)
+                            .edit()
+                            .putString("token", response.data.tokenInfo.access)
+                            .putString("email", binding.edtEmail.text.toString())
+                            .putBoolean("is_verified", response.isVerified)
+                            .apply()
+
+                        navigateToOtpVerification()
+                    } else {
+                        showError("Unable to register. Please try again")
+                    }
                 }
                 is AuthState.Error -> {
                     showLoading(false)
-                    showError(state.message)
+
+                    val userFriendlyMessage = when {
+                        state.message.contains("409") ||
+                                state.message.toLowerCase().contains("already exists") ||
+                                state.message.toLowerCase().contains("already registered") -> {
+                            showEmailExistsDialog()
+                            "This email is already registered. Please login instead"
+                        }
+                        state.message.contains("network") ||
+                                state.message.contains("connection") ->
+                            "Unable to connect. Please check your internet connection"
+                        state.message.contains("invalid") ->
+                            "Invalid email format. Please try again"
+                        else -> "Something went wrong. Please try again later"
+                    }
+
+                    showError(userFriendlyMessage)
                 }
             }
         }
+    }
+
+    private fun showEmailExistsDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Account Already Exists")
+            .setMessage("An account with this email already exists. Would you like to login instead?")
+            .setPositiveButton("Login") { _, _ ->
+                // Navigate to login
+                finish()
+            }
+            .setNegativeButton("Try Another Email", null)
+            .show()
+    }
+
+    private fun validateInputs(email: String, password: String): Boolean {
+        var isValid = true
+
+        if (email.isEmpty()) {
+            binding.edtEmail.error = "Email cannot be empty"
+            isValid = false
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.edtEmail.error = "Please enter a valid email address"
+            isValid = false
+        }
+
+        if (password.isEmpty()) {
+            binding.edtPassword.error = "Password cannot be empty"
+            isValid = false
+        } else if (password.length < 6) {
+            binding.edtPassword.error = "Password must be at least 6 characters"
+            isValid = false
+        } else if (!password.any { it.isDigit() }) {
+            binding.edtPassword.error = "Password must contain at least one number"
+            isValid = false
+        } else if (!password.any { it.isUpperCase() }) {
+            binding.edtPassword.error = "Password must contain at least one uppercase letter"
+            isValid = false
+        }
+
+        return isValid
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -86,18 +155,6 @@ class SignInActivity : AppCompatActivity() {
 
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun validateInputs(email: String, password: String): Boolean {
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.edtEmail.error = "Please enter a valid email"
-            return false
-        }
-        if (password.isEmpty() || password.length < 6) {
-            binding.edtPassword.error = "Password must be at least 6 characters"
-            return false
-        }
-        return true
     }
 
     private fun navigateToOtpVerification() {

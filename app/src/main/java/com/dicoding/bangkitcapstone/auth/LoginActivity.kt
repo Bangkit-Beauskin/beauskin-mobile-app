@@ -68,27 +68,36 @@ class LoginActivity : AppCompatActivity() {
                 is AuthState.Success -> {
                     showLoading(false)
                     val response = state.response
-                    if (response.code == 200) {
-                        val accessToken = response.data?.tokenInfo?.access
-                        if (accessToken != null) {
-                            getSharedPreferences("auth", MODE_PRIVATE)
-                                .edit()
-                                .putString("token", accessToken)
-                                .putString("email", binding.edtEmail.text.toString())
-                                .putBoolean("is_verified", response.isVerified)
-                                .apply()
 
-                            navigateToOtpVerification()
-                        } else {
-                            showError("Authentication failed: No token received")
-                        }
+                    if (response.data?.tokenInfo?.access != null) {
+                        getSharedPreferences("auth", MODE_PRIVATE)
+                            .edit()
+                            .putString("token", response.data.tokenInfo.access)
+                            .putString("email", binding.edtEmail.text.toString())
+                            .putBoolean("is_verified", response.isVerified)
+                            .apply()
+
+                        navigateToOtpVerification()
                     } else {
-                        showError(response.message ?: "Login failed")
+                        showError("Unable to log in. Please check your email and password")
                     }
                 }
                 is AuthState.Error -> {
                     showLoading(false)
-                    showError(state.message)
+
+                    val userFriendlyMessage = when {
+                        state.message.contains("401") ->
+                            "Invalid email or password. Please try again"
+                        state.message.contains("404") ->
+                            "Account not found. Please check your email or sign up"
+                        state.message.contains("network") ||
+                                state.message.contains("connection") ->
+                            "Unable to connect. Please check your internet connection"
+                        else -> "Something went wrong. Please try again later"
+                    }
+
+                    showError(userFriendlyMessage)
+
                     getSharedPreferences("auth", MODE_PRIVATE)
                         .edit()
                         .clear()

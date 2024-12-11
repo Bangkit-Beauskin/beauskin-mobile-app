@@ -17,6 +17,7 @@
             android:id="@+id/btnBack"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            app:tint="?attr/colorPrimary"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back Button"
             android:padding="12dp"

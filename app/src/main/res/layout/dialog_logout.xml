@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:backgroundTint="@color/navy_blue"
+                android:backgroundTint="?attr/colorPrimary"
                 android:minWidth="100dp"
                 android:text="Yes"
                 android:textAllCaps="false" />
