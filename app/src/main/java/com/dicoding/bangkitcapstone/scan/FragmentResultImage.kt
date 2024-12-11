@@ -143,7 +143,6 @@ class FragmentResultImage : Fragment() {
         requireActivity().finishAffinity()
     }
 
-
     data class CarouselItem(
         val imageUrl: String,
         val condition: String,
@@ -172,25 +171,6 @@ class FragmentResultImage : Fragment() {
                     }
                 )
             ),
-            CarouselItem( // left image
-                imageUrl = "${scanResponse.annotatedImages.left}?timestamp=${System.currentTimeMillis()}",
-                condition = getString(
-                    R.string.left_condition,
-                    scanResponse.predictions.left.acneCondition
-                ),
-                skinType = getString(
-                    R.string.left_skin_type,
-                    scanResponse.predictions.left.skinType
-                ),
-                acneTypes = getString(
-                    R.string.left_acne_types,
-                    if (scanResponse.predictions.left.detectedAcneTypes.isEmpty()) {
-                        "-"
-                    } else {
-                        scanResponse.predictions.left.detectedAcneTypes.joinToString(", ")
-                    }
-                )
-            ),
             CarouselItem( // right image
                 imageUrl = "${scanResponse.annotatedImages.right}?timestamp=${System.currentTimeMillis()}",
                 condition = getString(
@@ -207,6 +187,25 @@ class FragmentResultImage : Fragment() {
                         "-"
                     } else {
                         scanResponse.predictions.right.detectedAcneTypes.joinToString(", ")
+                    }
+                )
+            ),
+            CarouselItem( // left image
+                imageUrl = "${scanResponse.annotatedImages.left}?timestamp=${System.currentTimeMillis()}",
+                condition = getString(
+                    R.string.left_condition,
+                    scanResponse.predictions.left.acneCondition
+                ),
+                skinType = getString(
+                    R.string.left_skin_type,
+                    scanResponse.predictions.left.skinType
+                ),
+                acneTypes = getString(
+                    R.string.left_acne_types,
+                    if (scanResponse.predictions.left.detectedAcneTypes.isEmpty()) {
+                        "-"
+                    } else {
+                        scanResponse.predictions.left.detectedAcneTypes.joinToString(", ")
                     }
                 )
             )

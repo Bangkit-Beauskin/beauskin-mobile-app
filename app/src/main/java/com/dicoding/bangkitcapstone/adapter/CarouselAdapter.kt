@@ -38,8 +38,10 @@ class CarouselAdapter(private val items: List<FragmentResultImage.CarouselItem>)
             skinTypeText.text = item.skinType
             acneTypesText.text = item.acneTypes
 
+            val updatedImageUrl = "${item.imageUrl}?timestamp=${System.currentTimeMillis()}"
+
             Glide.with(itemView.context)
-                .load(item.imageUrl)
+                .load(updatedImageUrl)
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(imageView)
