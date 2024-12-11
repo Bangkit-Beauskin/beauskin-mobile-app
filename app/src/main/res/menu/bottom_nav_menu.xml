@@ -17,6 +17,6 @@
 
     <item
         android:id="@+id/navigation_profile"
-        android:icon="@drawable/baseline_person_24"
+        android:icon="@drawable/profile_icon_selector"
         android:title="" />
 </menu>
