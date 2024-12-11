@@ -72,14 +72,14 @@ class NewsDetailActivity : AppCompatActivity() {
 
             newsContent.text = item.description ?: getString(R.string.no_content)
 
-            if (!item.url.isNullOrEmpty()) {
+            if (!item.source.isNullOrEmpty()) {
                 sourceLabel.visibility = View.VISIBLE
                 sourceUrl.visibility = View.VISIBLE
-                sourceUrl.text = item.url
+                sourceUrl.text = item.source
 
                 sourceUrl.setOnClickListener {
                     try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.url))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.source))
                         startActivity(intent)
                     } catch (e: Exception) {
                         e.printStackTrace()

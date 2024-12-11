@@ -18,5 +18,6 @@ data class Item(
     @SerializedName("description") val description: String?,
     @SerializedName("url") val url: String?,
     @SerializedName("type") val type: String,
-    @SerializedName("skin_type") val skin_type: String?
+    @SerializedName("skin_type") val skin_type: String?,
+    @SerializedName("source") val source: String?
 ) : Parcelable
