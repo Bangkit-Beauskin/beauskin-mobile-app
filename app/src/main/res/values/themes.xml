@@ -5,6 +5,10 @@
          <item name="colorPrimary">@color/navy_blue</item>
         <item name="android:colorBackground">@color/white</item>
         <item name="colorSurface">@color/white</item>
+
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <style name="Theme.BangkitCapstone" parent="Base.Theme.BangkitCapstone" />

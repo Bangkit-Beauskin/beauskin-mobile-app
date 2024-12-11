@@ -1,53 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="4dp">
 
-    <!-- Untuk Pesan User -->
+    <!-- User Message Container -->
     <LinearLayout
         android:id="@+id/userMessageLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="start"
-        android:layout_marginEnd="16dp">
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="80dp"
+        android:layout_marginEnd="4dp"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/userMessageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/user_message_background"
-            android:padding="10dp"
-            android:textColor="@color/black"
             android:fontFamily="@font/poppins_regular"
-            android:maxWidth="240dp"
-            android:text="User message"
-            android:layout_alignParentStart="true"/>
+            android:maxWidth="260dp"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:textSize="14sp"
+            tools:text="User message" />
     </LinearLayout>
 
-    <!-- Untuk Pesan Bot -->
+    <!-- Bot Message Container -->
     <LinearLayout
         android:id="@+id/chatbotMessageLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="end"
-        android:layout_marginStart="70dp"
-        android:layout_marginBottom="0dp">
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="80dp"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/chatbotMessageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/chatbot_message_background"
-            android:padding="10dp"
-            android:textColor="@color/black"
-            android:maxWidth="240dp"
             android:fontFamily="@font/poppins_regular"
-            android:text="Chatbot message"
-            android:layout_alignParentEnd="true"/>
+            android:maxWidth="260dp"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:textSize="14sp"
+            tools:text="Chatbot message" />
     </LinearLayout>
-</LinearLayout>
 
+</RelativeLayout>
