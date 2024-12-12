@@ -61,19 +61,19 @@
             android:text="Login"
             android:textAllCaps="false"
             android:paddingVertical="12dp"
-            android:backgroundTint="@color/navy_blue"/>
+            android:backgroundTint="?attr/colorPrimary"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignIn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sign In"
+            android:text="Sign Up"
             android:textAllCaps="false"
             android:layout_marginTop="8dp"
             android:paddingVertical="12dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:strokeColor="@color/navy_blue"
-            android:textColor="@color/navy_blue"/>
+            app:strokeColor="?attr/colorPrimary"
+            android:textColor="?attr/colorPrimary"/>
 
     </LinearLayout>
 
