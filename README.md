@@ -48,5 +48,7 @@ The source code of the Android app for Beauskin, developed using Kotlin as part 
   🔗 Get Started
   
   Clone this repository.
+  
   Build and run the app using Android Studio.
+  
   Use the provided APK to test the application on a physical device.
