@@ -40,25 +40,6 @@ The source code of the Android app for Beauskin, developed using Kotlin as part 
 🚪 Logout
   Log out of the application securely with a simple tap.
 
-**💻 Tech Stack Checklist
-**
-
-🛠 Main Quest
-  Android Stack: Built using modern Android development practices.
-      Workflow Implementation: Integrated a seamless workflow to access the app’s core features.
-  AI/ML Integration:
-    AI/ML capabilities power the app’s main feature.
-    Implemented using either on-cloud solutions or directly on-device.
-  Networking:
-    Used Retrofit and Coroutines to interact with the project’s API.
-    Enabled smooth and efficient data exchange.
-  Stability:
-    Ensured the main features function without crashes.
-  Custom App Icon:
-    Designed and implemented a distinctive icon for the app.
-  Downloadable APK:
-    Provided a compiled APK file for testing and distribution.
-
   🔗 Get Started
   
   Clone this repository.
