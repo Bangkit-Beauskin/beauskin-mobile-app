@@ -1,4 +1,4 @@
-**Beauskin Mobile App**
+## **Beauskin Mobile App** 
 
 The source code of the Android app for Beauskin, developed using Kotlin as part of the Bangkit Capstone Project.
 
