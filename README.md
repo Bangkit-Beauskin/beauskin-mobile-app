@@ -19,14 +19,18 @@ The source code of the Android app for Beauskin, developed using Kotlin as part 
   Discover and explore:
 
   Product Previews: Learn about skincare suitable for all skin types, including dry, oily, and normal skin.
+  
   YouTube Links: Watch engaging videos showcasing skincare products.
+  
   News Updates: Stay informed with the latest news directly from your homepage.
     
 🔍 Scan Analysis
   Analyze your skin needs with ease:
 
   Tutorials: Guided instructions to help you use this feature.
+  
   Image Upload: Capture a photo using your camera or select one from your gallery.
+  
   Result Processing: The system analyzes your image and provides detailed results.
     
 🤖 Chatbot
